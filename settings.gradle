@@ -1,0 +1,3 @@
+include ':sleepwear'
+include ':app'
+rootProject.name = "SleepMonitoring"

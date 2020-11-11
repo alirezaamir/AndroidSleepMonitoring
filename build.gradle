@@ -1,0 +1,54 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+buildscript {
+    repositories {
+        google()
+        jcenter()
+    }
+    dependencies {
+        classpath "com.android.tools.build:gradle:4.0.1"
+
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        jcenter()
+    }
+
+    project.ext {
+        constants = [
+                path_start_activity : "/START_ACTIVITY",
+                path_stop_activity  : "/STOP_ACTIVITY",
+                path_acknowledge    : "/ACKNOWLEDGE",
+                path_data_exercise  : "/EXERCICE",
+                path_hr_location    : "/HEART_RATE_LOCATION",
+
+                example_path_asset  : "/ ASSET ",
+                example_path_text   : "/TEXT",
+                example_path_datamap: "/DATAMAP",
+
+                mainactivity        : "MainActivity",
+                recordingactivity   : "RecordingActivity",
+
+                a_key               : "a_value",
+                some_other_key      : "some_other_value",
+
+                profile_path        : "/PROFILE",
+                profile_key         : "profile",
+
+                heart_rate_path     : "/HEART_RATE",
+                heart_rate_key      : "heart_rate",
+
+                location_path       : "/LOCATION",
+                longitude_key       : "longitude",
+                latitude_key        : "latitude",
+        ]
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
