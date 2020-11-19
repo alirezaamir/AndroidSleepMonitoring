@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">SleepMonitoring</string>
+    <string name="heart_rate">HR : </string>
+    <string name="accelerometer">Acc : </string>
+    <string name="gyroscope">Gyro: </string>
+    <string name="record">Rec</string>
+    <string name="stop">Stop</string>
 </resources>
