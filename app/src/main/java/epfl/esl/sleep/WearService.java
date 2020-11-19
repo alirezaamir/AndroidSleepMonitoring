@@ -1,9 +1,6 @@
 package epfl.esl.sleep;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Matrix;
 import android.net.Uri;
 import android.util.Log;
 
@@ -15,7 +12,6 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.wearable.Asset;
-import com.google.android.gms.wearable.DataClient;
 import com.google.android.gms.wearable.DataEvent;
 import com.google.android.gms.wearable.DataEventBuffer;
 import com.google.android.gms.wearable.DataItem;
@@ -27,8 +23,6 @@ import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
 import com.google.android.gms.wearable.WearableListenerService;
 
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -42,53 +36,9 @@ public class WearService extends WearableListenerService {
     public static final String DATAMAP_INT_ARRAYLIST = "DATAMAP_INT_ARRAYLIST";
     public static final String IMAGE = "IMAGE";
     public static final String PATH = "PATH";
-    public static final String PROFILE = "PROFILE";
-    public static final String USERNAME = "USERNAME";
-    public static final String USERIMAGE = "USERIMAGE";
 
     // Tag for Logcat
     private final String TAG = this.getClass().getSimpleName();
-
-    private static Bitmap resizeImage(Bitmap bitmap, int newSize) {
-        int width = bitmap.getWidth();
-        int height = bitmap.getHeight();
-
-        // Image smaller, return it as is!
-        if (width <= newSize && height <= newSize) return bitmap;
-
-        int newWidth;
-        int newHeight;
-
-        if (width > height) {
-            newWidth = newSize;
-            newHeight = (newSize * height) / width;
-        } else if (width < height) {
-            newHeight = newSize;
-            newWidth = (newSize * width) / height;
-        } else {
-            newHeight = newSize;
-            newWidth = newSize;
-        }
-
-        float scaleWidth = ((float) newWidth) / width;
-        float scaleHeight = ((float) newHeight) / height;
-
-        Matrix matrix = new Matrix();
-        matrix.postScale(scaleWidth, scaleHeight);
-
-        return Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix, true);
-    }
-
-    public static Asset createAssetFromBitmap(Bitmap bitmap) {
-        bitmap = resizeImage(bitmap, 390);
-
-        if (bitmap != null) {
-            final ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteStream);
-            return Asset.createFromBytes(byteStream.toByteArray());
-        }
-        return null;
-    }
 
     @Override
     public void onCreate() {
@@ -159,13 +109,6 @@ public class WearService extends WearableListenerService {
 
                 assert uri.getPath() != null;
                 switch (uri.getPath()) {
-                    case BuildConfig.W_example_path_asset:
-                        // Extract the data behind the key you know contains
-                        // data
-                        Asset asset = dataMapItem.getDataMap().getAsset(BuildConfig.W_some_other_key);
-                        intent = new Intent("REPLACE_THIS_WITH_A_STRING_OF_ACTION_PREFERABLY_DEFINED_AS_A_CONSTANT_IN_TARGET_ACTIVITY");
-                        bitmapFromAsset(asset, intent, "REPLACE_THIS_WITH_A_STRING_OF_IMAGE_PREFERABLY_DEFINED_AS_A_CONSTANT_IN_TARGET_ACTIVITY");
-                        break;
                     case BuildConfig.W_example_path_datamap:
                         // Extract the data behind the key you know contains
                         // data
@@ -184,22 +127,22 @@ public class WearService extends WearableListenerService {
                         intent.putExtra(MainActivity.HEART_RATE, heartRate);
                         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
                         break;
-                    case BuildConfig.W_path_hr_location:
+                    case BuildConfig.W_path_hr_motion:
                         ArrayList<Integer> heartRates = dataMapItem.getDataMap().getIntegerArrayList(BuildConfig.W_heart_rate_key);
                         float[] latitudes = dataMapItem.getDataMap().getFloatArray(BuildConfig.W_latitude_key);
                         float[] longitudes = dataMapItem.getDataMap().getFloatArray(BuildConfig.W_longitude_key);
                         intent = new Intent(MainActivity.RECEIVE_HEART_RATE_LOCATION);
                         intent.putExtra(MainActivity.HEART_RATE, heartRates);
-                        intent.putExtra(MainActivity.LATITUDE, latitudes);
-                        intent.putExtra(MainActivity.LONGITUDE, longitudes);
+                        intent.putExtra(MainActivity.GYRO, latitudes);
+                        intent.putExtra(MainActivity.ACCEL, longitudes);
                         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
                         break;
                     case BuildConfig.W_location_path:
                         double longitude = dataMapItem.getDataMap().getDouble(BuildConfig.W_longitude_key);
                         double latitude = dataMapItem.getDataMap().getDouble(BuildConfig.W_latitude_key);
                         intent = new Intent(MainActivity.RECEIVE_LOCATION);
-                        intent.putExtra(MainActivity.LONGITUDE, longitude);
-                        intent.putExtra(MainActivity.LATITUDE, latitude);
+                        intent.putExtra(MainActivity.ACCEL, longitude);
+                        intent.putExtra(MainActivity.GYRO, latitude);
                         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
                         break;
                     default:
@@ -315,36 +258,9 @@ public class WearService extends WearableListenerService {
         });
     }
 
-    private void bitmapFromAsset(Asset asset, final Intent intent, final String extraName) {
-        // Reads an asset from the Wear API and parse it as an image
-        if (asset == null) {
-            throw new IllegalArgumentException("Asset must be non-null");
-        }
-
-        // Convert asset and convert it back to an image
-        Wearable.getDataClient(this).getFdForAsset(asset).addOnCompleteListener(new OnCompleteListener<DataClient.GetFdForAssetResponse>() {
-            @Override
-            public void onComplete(@NonNull Task<DataClient.GetFdForAssetResponse> runnable) {
-                Log.v(TAG, "Got bitmap from asset");
-                InputStream assetInputStream = runnable.getResult().getInputStream();
-                Bitmap bmp = BitmapFactory.decodeStream(assetInputStream);
-
-                final ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-                bmp.compress(Bitmap.CompressFormat.PNG, 100, byteStream);
-                byte[] bytes = byteStream.toByteArray();
-                intent.putExtra(extraName, bytes);
-                LocalBroadcastManager.getInstance(WearService.this).sendBroadcast(intent);
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception runnable) {
-                Log.e(TAG, "Failed to get bitmap from asset");
-            }
-        });
-    }
 
     // Constants
     public enum ACTION_SEND {
-        STARTACTIVITY, STOPACTIVITY, MESSAGE, EXAMPLE_DATAMAP, EXAMPLE_ASSET, PROFILE_SEND
+        STARTACTIVITY, STOPACTIVITY, MESSAGE, EXAMPLE_DATAMAP, EXAMPLE_ASSET
     }
 }

@@ -44,53 +44,12 @@ public class WearService extends WearableListenerService {
     // Tag for Logcat
     private final String TAG = this.getClass().getSimpleName();
 
-    private static Bitmap resizeImage(Bitmap bitmap, int newSize) {
-        int width = bitmap.getWidth();
-        int height = bitmap.getHeight();
-
-        // Image smaller, return it as is!
-        if (width <= newSize && height <= newSize) return bitmap;
-
-        int newWidth;
-        int newHeight;
-
-        if (width > height) {
-            newWidth = newSize;
-            newHeight = (newSize * height) / width;
-        } else if (width < height) {
-            newHeight = newSize;
-            newWidth = (newSize * width) / height;
-        } else {
-            newHeight = newSize;
-            newWidth = newSize;
-        }
-
-        float scaleWidth = ((float) newWidth) / width;
-        float scaleHeight = ((float) newHeight) / height;
-
-        Matrix matrix = new Matrix();
-        matrix.postScale(scaleWidth, scaleHeight);
-
-        return Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix, true);
-    }
-
     public static final String ACTIVITY_TO_START = "ACTIVITY_TO_START";
     public static final String MESSAGE = "MESSAGE";
     public static final String DATAMAP_INT = "DATAMAP_INT";
     public static final String DATAMAP_INT_ARRAYLIST = "DATAMAP_INT_ARRAYLIST";
     public static final String IMAGE = "IMAGE";
     public static final String PATH = "PATH";
-
-    public static Asset createAssetFromBitmap(Bitmap bitmap) {
-        bitmap = resizeImage(bitmap, 390);
-
-        if (bitmap != null) {
-            final ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteStream);
-            return Asset.createFromBytes(byteStream.toByteArray());
-        }
-        return null;
-    }
 
     @Override
     public void onCreate() {
@@ -140,7 +99,7 @@ public class WearService extends WearableListenerService {
                 sendPutDataMapRequest(putDataMapRequest);
                 break;
             case HEART_RATE_AND_LOCATION:
-                putDataMapRequest = PutDataMapRequest.create(BuildConfig.W_path_hr_location);
+                putDataMapRequest = PutDataMapRequest.create(BuildConfig.W_path_hr_motion);
                 putDataMapRequest.getDataMap().putIntegerArrayList(BuildConfig.W_heart_rate_key, intent.getIntegerArrayListExtra(HEART_RATE));
                 putDataMapRequest.getDataMap().putFloatArray(BuildConfig.W_latitude_key, intent.getFloatArrayExtra(LATITUDE));
                 putDataMapRequest.getDataMap().putFloatArray(BuildConfig.W_longitude_key, intent.getFloatArrayExtra(LONGITUDE));

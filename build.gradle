@@ -24,7 +24,7 @@ allprojects {
                 path_stop_activity  : "/STOP_ACTIVITY",
                 path_acknowledge    : "/ACKNOWLEDGE",
                 path_data_exercise  : "/EXERCICE",
-                path_hr_location    : "/HEART_RATE_LOCATION",
+                path_hr_motion    : "/HEART_RATE_MOTION",
 
                 example_path_asset  : "/ ASSET ",
                 example_path_text   : "/TEXT",
