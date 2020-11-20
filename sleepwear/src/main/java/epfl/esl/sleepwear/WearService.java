@@ -153,14 +153,6 @@ public class WearService extends WearableListenerService {
                         intent.putExtra("REPLACE_THIS_WITH_A_STRING_OF_ARRAYLIST_PREFERABLY_DEFINED_AS_A_CONSTANT_IN_TARGET_ACTIVITY", arraylist);
                         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
                         break;
-                    case BuildConfig.W_profile_path:
-                        Log.v(TAG, "Data changed for path: " + uri);
-                        DataMap dataMap = dataMapItem.getDataMap().getDataMap(BuildConfig.W_profile_key);
-                        String username = dataMap.getString("username");
-                        intent = new Intent(MainActivity.ACTION_RECEIVE_PROFILE_INFO);
-                        intent.putExtra(MainActivity.PROFILE_USERNAME, username);
-                        bitmapFromAsset(dataMap.getAsset("photo"), intent, MainActivity.PROFILE_IMAGE);
-                        break;
                     default:
                         Log.v(TAG, "Data changed for unhandled path: " + uri);
                         Log.v(TAG, BuildConfig.W_profile_path);
@@ -208,15 +200,6 @@ public class WearService extends WearableListenerService {
                 }
                 startIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(startIntent);
-                break;
-            case BuildConfig.W_path_stop_activity:
-                switch (data) {
-                    case BuildConfig.W_recordingactivity:
-                        Intent intentStop = new Intent();
-                        intentStop.setAction(MainActivity.ACTION_RECEIVE_PROFILE_INFO);
-                        LocalBroadcastManager.getInstance(WearService.this).sendBroadcast(intentStop);
-                        break;
-                }
                 break;
             case BuildConfig.W_path_acknowledge:
                 Log.v(TAG, "Received acknowledgment");
