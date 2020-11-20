@@ -4,32 +4,97 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="@dimen/box_inset_layout_padding"
+    android:layout_centerInParent="true"
     tools:context=".MainActivity"
-    tools:deviceIds="wear"
-    android:layout_centerInParent="true">
+    tools:deviceIds="wear">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="@dimen/inner_frame_layout_padding"
         android:gravity="center"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:padding="@dimen/inner_frame_layout_padding"
+        app:layout_boxedEdges="left">
 
-        <TextView
-            android:id="@+id/acc"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:id="@+id/acc_linear"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="8dp"
-            android:text="ACC: " />
+            android:gravity="start"
+            android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/gyro"
-            android:layout_width="wrap_content"
+            <TextView
+                android:id="@+id/acc_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ACC: "
+                android:textSize="18sp" />
+
+            <Space
+                android:layout_width="8dp"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/acc"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/gyro_linear"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="8dp"
-            android:text="GYRO: "
-            />
+            android:gravity="start"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/gyro_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="GYRO: "
+                android:textSize="18sp" />
+
+            <Space
+                android:layout_width="8dp"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/gyro"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <TextView
+                android:id="@+id/rec_btn"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_margin="8dp"
+                android:background="@drawable/rec_button"
+                android:gravity="center"
+                android:text="REC"
+                android:textColor="@color/white" />
+
+            <TextView
+                android:id="@+id/stp_btn"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_margin="8dp"
+                android:background="@drawable/stop_button"
+                android:text="STP"
+                android:gravity="center"
+                android:textColor="@color/white"
+                android:visibility="invisible"/>
+
+        </LinearLayout>
+
 
     </LinearLayout>
 </androidx.wear.widget.BoxInsetLayout>
