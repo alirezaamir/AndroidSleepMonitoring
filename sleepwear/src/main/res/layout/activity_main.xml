@@ -19,7 +19,7 @@
         <LinearLayout
             android:id="@+id/acc_linear"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="127dp"
             android:layout_margin="8dp"
             android:gravity="start"
             android:orientation="horizontal">
@@ -42,35 +42,10 @@
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/gyro_linear"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="8dp"
-            android:gravity="start"
+            android:gravity="center"
             android:orientation="horizontal">
-
-            <TextView
-                android:id="@+id/gyro_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="GYRO: "
-                android:textSize="18sp" />
-
-            <Space
-                android:layout_width="8dp"
-                android:layout_height="wrap_content" />
-
-            <TextView
-                android:id="@+id/gyro"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center">
 
             <TextView
                 android:id="@+id/rec_btn"
@@ -88,10 +63,10 @@
                 android:layout_height="32dp"
                 android:layout_margin="8dp"
                 android:background="@drawable/stop_button"
-                android:text="STP"
                 android:gravity="center"
+                android:text="STP"
                 android:textColor="@color/white"
-                android:visibility="invisible"/>
+                android:visibility="invisible" />
 
         </LinearLayout>
 

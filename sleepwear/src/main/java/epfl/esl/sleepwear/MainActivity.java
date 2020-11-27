@@ -8,6 +8,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.support.wearable.activity.WearableActivity;
 import android.util.Log;
 import android.view.View;
@@ -36,22 +37,30 @@ public class MainActivity extends WearableActivity implements SensorEventListene
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        final PowerManager.WakeLock wl = pm.newWakeLock(
+                PowerManager.SCREEN_DIM_WAKE_LOCK
+                       | PowerManager.ON_AFTER_RELEASE,
+                TAG);
+
         accText = (TextView) findViewById(R.id.acc);
-        gyroText = (TextView) findViewById(R.id.gyro);
+//        gyroText = (TextView) findViewById(R.id.gyro);
         recBtn = (TextView) findViewById(R.id.rec_btn);
         stopBtn = (TextView) findViewById(R.id.stp_btn);
+
+//        wl.acquire();
 
         recBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                recButtonClicked();
+                recButtonClicked(wl);
             }
         });
 
         stopBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                stopButtonClicked();
+                stopButtonClicked(wl);
             }
         });
 
@@ -82,7 +91,13 @@ public class MainActivity extends WearableActivity implements SensorEventListene
             float acc1 = (float) event.values[1];
             float acc2 = (float) event.values[2];
 
-            accText.setText(acc0 + "\n" + acc1 + "\n" + acc2);
+            double normAcc = Math.sqrt(Math.pow(acc0, 2) + Math.pow(acc1, 2) + Math.pow(acc2, 2));
+            float ang0 = (float) Math.toDegrees(Math.acos(acc0/normAcc));
+            float ang1 = (float) Math.toDegrees(Math.acos(acc1/normAcc));
+            float ang2 = (float) Math.toDegrees(Math.acos(acc2/normAcc));
+
+            accText.setText(acc0 + "\n" + acc1 + "\n" + acc2 + "\n" +
+                            ang0 + "\n" + ang1 + "\n" + ang2);
             if (recording) {
                 accArray.add(acc0);
                 accArray.add(acc1);
@@ -94,7 +109,7 @@ public class MainActivity extends WearableActivity implements SensorEventListene
             float gyro1 = (float) event.values[1];
             float gyro2 = (float) event.values[2];
 
-            gyroText.setText(gyro0 + "\n" + gyro1 + "\n" + gyro2);
+//            gyroText.setText(gyro0 + "\n" + gyro1 + "\n" + gyro2);
 
             if (recording){
                 gyroArray.add(gyro0);
@@ -125,36 +140,53 @@ public class MainActivity extends WearableActivity implements SensorEventListene
         sensorManager.unregisterListener(this);
     }
 
-    private void recButtonClicked(){
+    private void recButtonClicked(PowerManager.WakeLock wl){
         recBtn.setVisibility(View.INVISIBLE);
         stopBtn.setVisibility(View.VISIBLE);
         recording = true;
+        wl.acquire();
     }
 
-    private void stopButtonClicked(){
+    private void stopButtonClicked(PowerManager.WakeLock wl){
         recBtn.setVisibility(View.VISIBLE);
         stopBtn.setVisibility(View.INVISIBLE);
         recording = false;
 
         writeToFile(MainActivity.this, accArray, gyroArray);
-
+        wl.release();
     }
 
     private void writeToFile(Context context, ArrayList<Float> accArray, ArrayList<Float> gyroArray){
         // Create File to save the data
         File path = context.getExternalFilesDir(null);
-        File file = new File(path, "IMU.txt");
+        File file_acc = new File(path, "acc_data.txt");
+        File file_gyro = new File(path, "gyro_data.txt");
 
         try {
-            FileOutputStream fos = new FileOutputStream(file);
+            FileOutputStream fos_acc = new FileOutputStream(file_acc, false);
             for (int i = 0; i < accArray.size(); i++){
-                fos.write(Float.toString(accArray.get(i)).getBytes());
+                fos_acc.write(Float.toString(accArray.get(i)).getBytes());
+                if ((i%3) == 0) {
+                    fos_acc.write("\n".getBytes());
+                } else {
+                    fos_acc.write(", ".getBytes());
+                }
             }
-            fos.write("GYRO".getBytes());
+            FileOutputStream fos_gyro = new FileOutputStream(file_gyro, false);
             for (int i = 0; i < gyroArray.size(); i++){
-                fos.write(Float.toString(gyroArray.get(i)).getBytes());
+                fos_gyro.write(Float.toString(gyroArray.get(i)).getBytes());
+                if ((i%3) == 0) {
+                    fos_gyro.write("\n".getBytes());
+                } else {
+                    fos_gyro.write(", ".getBytes());
+                }
             }
-            fos.close();
+            fos_acc.write("\n".getBytes());
+            fos_acc.flush();
+            fos_acc.close();
+            fos_gyro.write("\n".getBytes());
+            fos_gyro.flush();
+            fos_gyro.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
