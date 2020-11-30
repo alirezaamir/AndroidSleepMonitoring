@@ -1,6 +1,7 @@
 package epfl.esl.sleepwear;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -119,6 +120,11 @@ public class MainActivity extends WearableActivity implements SensorEventListene
         }else{
             Log.d(TAG, "Unrecognized type: " + event.sensor.getType());
         }
+
+        Intent intent = new Intent(MainActivity.this, WearService.class);
+        intent.setAction(WearService.ACTION_SEND.MOTION.name());
+        intent.putExtra(WearService.MOTION, event.values);
+        startService(intent);
     }
 
     @Override

@@ -129,20 +129,16 @@ public class WearService extends WearableListenerService {
                         break;
                     case BuildConfig.W_path_hr_motion:
                         ArrayList<Integer> heartRates = dataMapItem.getDataMap().getIntegerArrayList(BuildConfig.W_heart_rate_key);
-                        float[] latitudes = dataMapItem.getDataMap().getFloatArray(BuildConfig.W_latitude_key);
-                        float[] longitudes = dataMapItem.getDataMap().getFloatArray(BuildConfig.W_longitude_key);
+                        float[] latitudes = dataMapItem.getDataMap().getFloatArray(BuildConfig.W_motion_key);
                         intent = new Intent(MainActivity.RECEIVE_HEART_RATE_LOCATION);
                         intent.putExtra(MainActivity.HEART_RATE, heartRates);
                         intent.putExtra(MainActivity.GYRO, latitudes);
-                        intent.putExtra(MainActivity.ACCEL, longitudes);
                         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
                         break;
-                    case BuildConfig.W_location_path:
-                        double longitude = dataMapItem.getDataMap().getDouble(BuildConfig.W_longitude_key);
-                        double latitude = dataMapItem.getDataMap().getDouble(BuildConfig.W_latitude_key);
+                    case BuildConfig.W_motion_path:
+                        double longitude = dataMapItem.getDataMap().getDouble(BuildConfig.W_motion_key);
                         intent = new Intent(MainActivity.RECEIVE_LOCATION);
                         intent.putExtra(MainActivity.ACCEL, longitude);
-                        intent.putExtra(MainActivity.GYRO, latitude);
                         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
                         break;
                     default:
