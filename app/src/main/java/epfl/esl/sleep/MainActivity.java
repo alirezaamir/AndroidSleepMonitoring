@@ -28,6 +28,7 @@ public class MainActivity extends AppCompatActivity implements DataClient.OnData
     public static final String HEART_RATE = "HEART_RATE";
     public static final String ACCEL = "ACCEL";
     public static final String GYRO = "GYRO";
+    private
 
     TextView recBtn, stopBtn, hrTxt, accTxt, gyroTxt;
     private HeartRateBroadcastReceiver heartRateBroadcastReceiver;
@@ -42,6 +43,12 @@ public class MainActivity extends AppCompatActivity implements DataClient.OnData
         hrTxt = findViewById(R.id.hr_value);
         accTxt = findViewById(R.id.acc_value);
         gyroTxt = findViewById(R.id.gyro_value);
+
+
+        // Intent to the Brainactivity
+        // Comment these lines to stay in this activity
+        Intent intent = new Intent(this, BrainActivity.class);
+        startActivity(intent);
     }
 
 
