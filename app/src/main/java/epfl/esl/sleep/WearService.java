@@ -136,9 +136,9 @@ public class WearService extends WearableListenerService {
                         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
                         break;
                     case BuildConfig.W_motion_path:
-                        double longitude = dataMapItem.getDataMap().getDouble(BuildConfig.W_motion_key);
-                        intent = new Intent(MainActivity.RECEIVE_LOCATION);
-                        intent.putExtra(MainActivity.ACCEL, longitude);
+                        float[] motion = dataMapItem.getDataMap().getFloatArray(BuildConfig.W_motion_key);
+                        intent = new Intent(MainActivity.RECEIVE_MOTION);
+                        intent.putExtra(MainActivity.ACCEL, motion);
                         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
                         break;
                     default:

@@ -1,5 +1,6 @@
 package epfl.esl.sleep;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
@@ -11,12 +12,18 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.TextView;
 
-public class MainActivity extends AppCompatActivity {
+import com.google.android.gms.wearable.DataClient;
+import com.google.android.gms.wearable.DataEvent;
+import com.google.android.gms.wearable.DataEventBuffer;
+import com.google.android.gms.wearable.Wearable;
+
+public class MainActivity extends AppCompatActivity implements DataClient.OnDataChangedListener {
 
     public static final String RECEIVE_HEART_RATE = "RECEIVE_HEART_RATE";
-    public static final String RECEIVE_LOCATION = "RECEIVE_LOCATION";
+    public static final String RECEIVE_MOTION = "RECEIVE_MOTION";
     public static final String RECEIVE_HEART_RATE_LOCATION = "RECEIVE_HEART_RATE_LOCATION";
     public static final String HEART_RATE = "HEART_RATE";
     public static final String ACCEL = "ACCEL";
@@ -41,9 +48,25 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        heartRateBroadcastReceiver = new HeartRateBroadcastReceiver();
-        LocalBroadcastManager.getInstance(this).registerReceiver(heartRateBroadcastReceiver, new
-                IntentFilter(RECEIVE_HEART_RATE));
+//        heartRateBroadcastReceiver = new HeartRateBroadcastReceiver();
+//        LocalBroadcastManager.getInstance(this).registerReceiver(heartRateBroadcastReceiver, new
+//                IntentFilter(RECEIVE_MOTION));
+
+        Wearable.getDataClient(this).addListener(this);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Wearable.getDataClient(this).removeListener(this);
+    }
+
+    @Override
+    public void onDataChanged(DataEventBuffer dataEventBuffer) {
+        Log.v("MainActivity", "data received: ");
+        for (DataEvent event : dataEventBuffer){
+            hrTxt.setText(" " + event.getDataItem().getData());
+        }
     }
 
 

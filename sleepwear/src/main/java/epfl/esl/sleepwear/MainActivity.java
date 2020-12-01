@@ -15,6 +15,18 @@ import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.wearable.DataClient;
+import com.google.android.gms.wearable.DataItem;
+import com.google.android.gms.wearable.PutDataMapRequest;
+import com.google.android.gms.wearable.PutDataRequest;
+import com.google.android.gms.wearable.Wearable;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -31,6 +43,7 @@ public class MainActivity extends WearableActivity implements SensorEventListene
     ArrayList<Float> accArray = new ArrayList<>();
     ArrayList<Float> gyroArray = new ArrayList<>();
     private boolean recording = false;
+    private DataClient dataClient;
 
 
     @Override
@@ -83,6 +96,8 @@ public class MainActivity extends WearableActivity implements SensorEventListene
                 .SENSOR_SERVICE);
         acc_sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         gyro_sensor = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+
+        dataClient = Wearable.getDataClient(this);
     }
 
     @Override
@@ -121,10 +136,27 @@ public class MainActivity extends WearableActivity implements SensorEventListene
             Log.d(TAG, "Unrecognized type: " + event.sensor.getType());
         }
 
-        Intent intent = new Intent(MainActivity.this, WearService.class);
-        intent.setAction(WearService.ACTION_SEND.MOTION.name());
-        intent.putExtra(WearService.MOTION, event.values);
-        startService(intent);
+//        Intent intent = new Intent(MainActivity.this, WearService.class);
+//        intent.setAction(WearService.ACTION_SEND.MOTION.name());
+//        intent.putExtra(WearService.MOTION, event.values);
+//        startService(intent);
+
+        sendDataMap(event.values);
+    }
+
+    private void sendDataMap(float[] values) {
+        PutDataMapRequest putDataMapRequest = PutDataMapRequest.create(BuildConfig.W_motion_path);
+        putDataMapRequest.getDataMap().putFloatArray(BuildConfig.W_motion_key, values);
+        putDataMapRequest.setUrgent();
+        PutDataRequest putDataReq = putDataMapRequest.asPutDataRequest();
+        Task<DataItem> putDataTask = dataClient.putDataItem(putDataReq);
+
+        putDataTask.addOnSuccessListener(new OnSuccessListener<DataItem>() {
+            @Override
+            public void onSuccess(DataItem dataItem) {
+                Log.v(TAG, "Task completed!");
+            }
+        });
     }
 
     @Override
