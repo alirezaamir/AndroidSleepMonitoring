@@ -8,6 +8,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.PowerManager;
 import android.support.wearable.activity.WearableActivity;
 import android.text.TextUtils;
@@ -48,6 +49,9 @@ public class MainActivity extends WearableActivity implements SensorEventListene
     ArrayList<Float> accArray = new ArrayList<>();
     ArrayList<Float> gyroArray = new ArrayList<>();
     private boolean recording = false;
+    private static final int SENDING_PERIOD= 2000;
+    private float[] acc_gyr_values = {0, 0, 0, 0, 0, 0};
+    Handler handler = new Handler();
 
 
     @Override
@@ -96,10 +100,11 @@ public class MainActivity extends WearableActivity implements SensorEventListene
                     + ".permission.ACCESS_COARSE_LOCATION", "android.permission.INTERNET"}, 0);
         }
 
-        sensorManager = (SensorManager) getSystemService(MainActivity
-                .SENSOR_SERVICE);
+        sensorManager = (SensorManager) getSystemService(MainActivity.SENSOR_SERVICE);
         acc_sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         gyro_sensor = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+
+        handler.post(runnableSendData);
     }
 
     @Override
@@ -122,8 +127,9 @@ public class MainActivity extends WearableActivity implements SensorEventListene
                 accArray.add(acc2);
             }
 
-            sendDataMap(event.values);
-
+            acc_gyr_values[0] = acc0;
+            acc_gyr_values[1] = acc1;
+            acc_gyr_values[2] = acc2;
 
         } else if (event.sensor.getType() == Sensor.TYPE_GYROSCOPE) {
             float gyro0 = (float) event.values[0];
@@ -137,17 +143,18 @@ public class MainActivity extends WearableActivity implements SensorEventListene
                 gyroArray.add(gyro1);
                 gyroArray.add(gyro2);
             }
+
+            acc_gyr_values[3] = gyro0;
+            acc_gyr_values[4] = gyro1;
+            acc_gyr_values[5] = gyro2;
         } else {
             Log.d(TAG, "Unrecognized type: " + event.sensor.getType());
         }
 
-//        Intent intent = new Intent(MainActivity.this, WearService.class);
-//        intent.setAction(WearService.ACTION_SEND.MOTION.name());
-//        intent.putExtra(WearService.MOTION, event.values);
-//        startService(intent);
     }
 
-    private void sendDataMap(float[] values) {
+    private void sendDataMap() {
+        final float[] values = acc_gyr_values;
         PutDataMapRequest putDataMapRequest = PutDataMapRequest.create(BuildConfig.W_motion_path);
         putDataMapRequest.getDataMap().putFloatArray(BuildConfig.W_motion_key, values);
         putDataMapRequest.getDataMap().putLong("time", new Date().getTime());
@@ -181,6 +188,18 @@ public class MainActivity extends WearableActivity implements SensorEventListene
         super.onPause();
         sensorManager.unregisterListener(this);
     }
+
+    private Runnable runnableSendData = new Runnable() {
+        @Override
+        public void run() {
+            Log.d(TAG, "Runnable is called!");
+            if (acc_gyr_values != null)
+                sendDataMap();
+
+            // Repeat the task
+            handler.postDelayed(this, SENDING_PERIOD);
+        }
+    };
 
     private void recButtonClicked(PowerManager.WakeLock wl) {
         recBtn.setVisibility(View.INVISIBLE);

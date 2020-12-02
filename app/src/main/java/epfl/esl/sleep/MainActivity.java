@@ -93,10 +93,12 @@ public class MainActivity extends AppCompatActivity implements DataClient.OnData
                 switch (uri.getPath()) {
 
                     case BuildConfig.W_motion_path:
-                        float[] heartRate = dataMapItem.getDataMap().getFloatArray(BuildConfig.W_motion_key);
-                        hrTxt.setText(Float.toString(heartRate[0]));
-                        accTxt.setText(Float.toString(heartRate[0]));
-                        gyroTxt.setText(Float.toString(heartRate[0]));
+                        float[] motion = dataMapItem.getDataMap().getFloatArray(BuildConfig.W_motion_key);
+//                        hrTxt.setText(Float.toString(motion[0]));
+                        String accString = motion[0] + "\n" + motion[1] + "\n" + motion[2];
+                        String gyroString = motion[3] + "\n" + motion[4] + "\n" + motion[5];
+                        accTxt.setText(accString);
+                        gyroTxt.setText(gyroString);
 
                 }
             }
