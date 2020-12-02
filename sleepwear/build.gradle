@@ -5,7 +5,7 @@ android {
     buildToolsVersion "30.0.2"
 
     defaultConfig {
-        applicationId "epfl.esl.sleepwear"
+        applicationId "epfl.esl.sleep"
         minSdkVersion 24
         targetSdkVersion 30
         versionCode 1

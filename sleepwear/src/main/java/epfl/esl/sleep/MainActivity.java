@@ -1,7 +1,6 @@
-package epfl.esl.sleepwear;
+package epfl.esl.sleep;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -11,18 +10,19 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.support.wearable.activity.WearableActivity;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import androidx.annotation.NonNull;
-
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.gms.wearable.CapabilityClient;
+import com.google.android.gms.wearable.CapabilityInfo;
 import com.google.android.gms.wearable.DataClient;
 import com.google.android.gms.wearable.DataItem;
+import com.google.android.gms.wearable.Node;
 import com.google.android.gms.wearable.PutDataMapRequest;
 import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
@@ -31,6 +31,11 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 
 public class MainActivity extends WearableActivity implements SensorEventListener {
@@ -43,7 +48,6 @@ public class MainActivity extends WearableActivity implements SensorEventListene
     ArrayList<Float> accArray = new ArrayList<>();
     ArrayList<Float> gyroArray = new ArrayList<>();
     private boolean recording = false;
-    private DataClient dataClient;
 
 
     @Override
@@ -54,7 +58,7 @@ public class MainActivity extends WearableActivity implements SensorEventListene
         PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
         final PowerManager.WakeLock wl = pm.newWakeLock(
                 PowerManager.SCREEN_DIM_WAKE_LOCK
-                       | PowerManager.ON_AFTER_RELEASE,
+                        | PowerManager.ON_AFTER_RELEASE,
                 TAG);
 
         accText = (TextView) findViewById(R.id.acc);
@@ -96,8 +100,6 @@ public class MainActivity extends WearableActivity implements SensorEventListene
                 .SENSOR_SERVICE);
         acc_sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         gyro_sensor = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
-
-        dataClient = Wearable.getDataClient(this);
     }
 
     @Override
@@ -108,31 +110,34 @@ public class MainActivity extends WearableActivity implements SensorEventListene
             float acc2 = (float) event.values[2];
 
             double normAcc = Math.sqrt(Math.pow(acc0, 2) + Math.pow(acc1, 2) + Math.pow(acc2, 2));
-            float ang0 = (float) Math.toDegrees(Math.acos(acc0/normAcc));
-            float ang1 = (float) Math.toDegrees(Math.acos(acc1/normAcc));
-            float ang2 = (float) Math.toDegrees(Math.acos(acc2/normAcc));
+            float ang0 = (float) Math.toDegrees(Math.acos(acc0 / normAcc));
+            float ang1 = (float) Math.toDegrees(Math.acos(acc1 / normAcc));
+            float ang2 = (float) Math.toDegrees(Math.acos(acc2 / normAcc));
 
             accText.setText(acc0 + "\n" + acc1 + "\n" + acc2 + "\n" +
-                            ang0 + "\n" + ang1 + "\n" + ang2);
+                    ang0 + "\n" + ang1 + "\n" + ang2);
             if (recording) {
                 accArray.add(acc0);
                 accArray.add(acc1);
                 accArray.add(acc2);
             }
 
-        } else if (event.sensor.getType() == Sensor.TYPE_GYROSCOPE){
+            sendDataMap(event.values);
+
+
+        } else if (event.sensor.getType() == Sensor.TYPE_GYROSCOPE) {
             float gyro0 = (float) event.values[0];
             float gyro1 = (float) event.values[1];
             float gyro2 = (float) event.values[2];
 
 //            gyroText.setText(gyro0 + "\n" + gyro1 + "\n" + gyro2);
 
-            if (recording){
+            if (recording) {
                 gyroArray.add(gyro0);
                 gyroArray.add(gyro1);
                 gyroArray.add(gyro2);
             }
-        }else{
+        } else {
             Log.d(TAG, "Unrecognized type: " + event.sensor.getType());
         }
 
@@ -140,16 +145,15 @@ public class MainActivity extends WearableActivity implements SensorEventListene
 //        intent.setAction(WearService.ACTION_SEND.MOTION.name());
 //        intent.putExtra(WearService.MOTION, event.values);
 //        startService(intent);
-
-        sendDataMap(event.values);
     }
 
     private void sendDataMap(float[] values) {
         PutDataMapRequest putDataMapRequest = PutDataMapRequest.create(BuildConfig.W_motion_path);
         putDataMapRequest.getDataMap().putFloatArray(BuildConfig.W_motion_key, values);
-        putDataMapRequest.setUrgent();
+        putDataMapRequest.getDataMap().putLong("time", new Date().getTime());
         PutDataRequest putDataReq = putDataMapRequest.asPutDataRequest();
-        Task<DataItem> putDataTask = dataClient.putDataItem(putDataReq);
+        putDataReq.setUrgent();
+        Task<DataItem> putDataTask = Wearable.getDataClient(this).putDataItem(putDataReq);
 
         putDataTask.addOnSuccessListener(new OnSuccessListener<DataItem>() {
             @Override
@@ -178,14 +182,14 @@ public class MainActivity extends WearableActivity implements SensorEventListene
         sensorManager.unregisterListener(this);
     }
 
-    private void recButtonClicked(PowerManager.WakeLock wl){
+    private void recButtonClicked(PowerManager.WakeLock wl) {
         recBtn.setVisibility(View.INVISIBLE);
         stopBtn.setVisibility(View.VISIBLE);
         recording = true;
         wl.acquire();
     }
 
-    private void stopButtonClicked(PowerManager.WakeLock wl){
+    private void stopButtonClicked(PowerManager.WakeLock wl) {
         recBtn.setVisibility(View.VISIBLE);
         stopBtn.setVisibility(View.INVISIBLE);
         recording = false;
@@ -194,7 +198,7 @@ public class MainActivity extends WearableActivity implements SensorEventListene
         wl.release();
     }
 
-    private void writeToFile(Context context, ArrayList<Float> accArray, ArrayList<Float> gyroArray){
+    private void writeToFile(Context context, ArrayList<Float> accArray, ArrayList<Float> gyroArray) {
         // Create File to save the data
         File path = context.getExternalFilesDir(null);
         File file_acc = new File(path, "acc_data.txt");
@@ -202,18 +206,18 @@ public class MainActivity extends WearableActivity implements SensorEventListene
 
         try {
             FileOutputStream fos_acc = new FileOutputStream(file_acc, false);
-            for (int i = 0; i < accArray.size(); i++){
+            for (int i = 0; i < accArray.size(); i++) {
                 fos_acc.write(Float.toString(accArray.get(i)).getBytes());
-                if ((i%3) == 0) {
+                if ((i % 3) == 0) {
                     fos_acc.write("\n".getBytes());
                 } else {
                     fos_acc.write(", ".getBytes());
                 }
             }
             FileOutputStream fos_gyro = new FileOutputStream(file_gyro, false);
-            for (int i = 0; i < gyroArray.size(); i++){
+            for (int i = 0; i < gyroArray.size(); i++) {
                 fos_gyro.write(Float.toString(gyroArray.get(i)).getBytes());
-                if ((i%3) == 0) {
+                if ((i % 3) == 0) {
                     fos_gyro.write("\n".getBytes());
                 } else {
                     fos_gyro.write(", ".getBytes());

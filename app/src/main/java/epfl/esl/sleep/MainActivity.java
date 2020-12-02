@@ -11,14 +11,29 @@ import android.content.IntentFilter;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
+import android.net.Uri;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.wearable.CapabilityClient;
+import com.google.android.gms.wearable.CapabilityInfo;
 import com.google.android.gms.wearable.DataClient;
 import com.google.android.gms.wearable.DataEvent;
 import com.google.android.gms.wearable.DataEventBuffer;
+import com.google.android.gms.wearable.DataMapItem;
+import com.google.android.gms.wearable.Node;
 import com.google.android.gms.wearable.Wearable;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class MainActivity extends AppCompatActivity implements DataClient.OnDataChangedListener {
 
@@ -28,7 +43,6 @@ public class MainActivity extends AppCompatActivity implements DataClient.OnData
     public static final String HEART_RATE = "HEART_RATE";
     public static final String ACCEL = "ACCEL";
     public static final String GYRO = "GYRO";
-    private
 
     TextView recBtn, stopBtn, hrTxt, accTxt, gyroTxt;
     private HeartRateBroadcastReceiver heartRateBroadcastReceiver;
@@ -47,8 +61,8 @@ public class MainActivity extends AppCompatActivity implements DataClient.OnData
 
         // Intent to the Brainactivity
         // Comment these lines to stay in this activity
-        Intent intent = new Intent(this, BrainActivity.class);
-        startActivity(intent);
+//        Intent intent = new Intent(this, BrainActivity.class);
+//        startActivity(intent);
     }
 
 
@@ -72,7 +86,22 @@ public class MainActivity extends AppCompatActivity implements DataClient.OnData
     public void onDataChanged(DataEventBuffer dataEventBuffer) {
         Log.v("MainActivity", "data received: ");
         for (DataEvent event : dataEventBuffer){
-            hrTxt.setText(" " + event.getDataItem().getData());
+            if (event.getType() == DataEvent.TYPE_CHANGED) {
+                DataMapItem dataMapItem = DataMapItem.fromDataItem(event.getDataItem());
+                Uri uri = event.getDataItem().getUri();
+                assert uri.getPath() != null;
+                switch (uri.getPath()) {
+
+                    case BuildConfig.W_motion_path:
+                        float[] heartRate = dataMapItem.getDataMap().getFloatArray(BuildConfig.W_motion_key);
+                        hrTxt.setText(Float.toString(heartRate[0]));
+                        accTxt.setText(Float.toString(heartRate[0]));
+                        gyroTxt.setText(Float.toString(heartRate[0]));
+
+                }
+            }
+
+
         }
     }
 
@@ -83,8 +112,10 @@ public class MainActivity extends AppCompatActivity implements DataClient.OnData
         public void onReceive(Context context, Intent intent) {
             // Show HR in a TextView
             int heartRateWatch = intent.getIntExtra(HEART_RATE, -1);
-            hrTxt.setText(String.valueOf(heartRateWatch));
+//            hrTxt.setText(String.valueOf(heartRateWatch));
         }
     }
 
-}
+
+
+    }

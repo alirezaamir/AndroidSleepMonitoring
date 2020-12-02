@@ -1,4 +1,4 @@
-package epfl.esl.sleepwear;
+package epfl.esl.sleep;
 
 import org.junit.Test;
 

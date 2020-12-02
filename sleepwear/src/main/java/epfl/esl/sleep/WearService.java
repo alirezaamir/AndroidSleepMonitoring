@@ -1,4 +1,4 @@
-package epfl.esl.sleepwear;
+package epfl.esl.sleep;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
