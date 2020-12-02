@@ -11,19 +11,13 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.PowerManager;
 import android.support.wearable.activity.WearableActivity;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.android.gms.wearable.CapabilityClient;
-import com.google.android.gms.wearable.CapabilityInfo;
-import com.google.android.gms.wearable.DataClient;
 import com.google.android.gms.wearable.DataItem;
-import com.google.android.gms.wearable.Node;
 import com.google.android.gms.wearable.PutDataMapRequest;
 import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
@@ -33,10 +27,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 
 public class MainActivity extends WearableActivity implements SensorEventListener {
@@ -44,13 +34,14 @@ public class MainActivity extends WearableActivity implements SensorEventListene
     private TextView accText, gyroText;
     private TextView recBtn, stopBtn;
     private SensorManager sensorManager;
-    private Sensor acc_sensor, gyro_sensor;
+    private Sensor acc_sensor, gyro_sensor, hr_sensor;
     final private String TAG = MainActivity.class.getSimpleName();
     ArrayList<Float> accArray = new ArrayList<>();
     ArrayList<Float> gyroArray = new ArrayList<>();
     private boolean recording = false;
     private static final int SENDING_PERIOD= 2000;
-    private float[] acc_gyr_values = {0, 0, 0, 0, 0, 0};
+    private float[] accGyrValues = {0, 0, 0, 0, 0, 0};
+    private int hrValues = 0;
     Handler handler = new Handler();
 
 
@@ -103,6 +94,7 @@ public class MainActivity extends WearableActivity implements SensorEventListene
         sensorManager = (SensorManager) getSystemService(MainActivity.SENSOR_SERVICE);
         acc_sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         gyro_sensor = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+        hr_sensor = sensorManager.getDefaultSensor(Sensor.TYPE_HEART_RATE);
 
         handler.post(runnableSendData);
     }
@@ -127,9 +119,9 @@ public class MainActivity extends WearableActivity implements SensorEventListene
                 accArray.add(acc2);
             }
 
-            acc_gyr_values[0] = acc0;
-            acc_gyr_values[1] = acc1;
-            acc_gyr_values[2] = acc2;
+            accGyrValues[0] = acc0;
+            accGyrValues[1] = acc1;
+            accGyrValues[2] = acc2;
 
         } else if (event.sensor.getType() == Sensor.TYPE_GYROSCOPE) {
             float gyro0 = (float) event.values[0];
@@ -144,19 +136,24 @@ public class MainActivity extends WearableActivity implements SensorEventListene
                 gyroArray.add(gyro2);
             }
 
-            acc_gyr_values[3] = gyro0;
-            acc_gyr_values[4] = gyro1;
-            acc_gyr_values[5] = gyro2;
-        } else {
+            accGyrValues[3] = gyro0;
+            accGyrValues[4] = gyro1;
+            accGyrValues[5] = gyro2;
+        } else if(event.sensor.getType() == Sensor.TYPE_HEART_RATE) {
+            hrValues = (int) event.values[0];
+
+        }else{
             Log.d(TAG, "Unrecognized type: " + event.sensor.getType());
         }
 
     }
 
     private void sendDataMap() {
-        final float[] values = acc_gyr_values;
+        final float[] values = accGyrValues;
+        final int hrValue = hrValues;
         PutDataMapRequest putDataMapRequest = PutDataMapRequest.create(BuildConfig.W_motion_path);
         putDataMapRequest.getDataMap().putFloatArray(BuildConfig.W_motion_key, values);
+        putDataMapRequest.getDataMap().putInt(BuildConfig.W_heart_rate_key, hrValue);
         putDataMapRequest.getDataMap().putLong("time", new Date().getTime());
         PutDataRequest putDataReq = putDataMapRequest.asPutDataRequest();
         putDataReq.setUrgent();
@@ -181,6 +178,7 @@ public class MainActivity extends WearableActivity implements SensorEventListene
         super.onResume();
         sensorManager.registerListener(this, acc_sensor, SensorManager.SENSOR_DELAY_NORMAL);
         sensorManager.registerListener(this, gyro_sensor, SensorManager.SENSOR_DELAY_NORMAL);
+        sensorManager.registerListener(this, hr_sensor, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
     @Override
@@ -193,7 +191,7 @@ public class MainActivity extends WearableActivity implements SensorEventListene
         @Override
         public void run() {
             Log.d(TAG, "Runnable is called!");
-            if (acc_gyr_values != null)
+            if (accGyrValues != null)
                 sendDataMap();
 
             // Repeat the task

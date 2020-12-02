@@ -91,15 +91,15 @@ public class MainActivity extends AppCompatActivity implements DataClient.OnData
                 Uri uri = event.getDataItem().getUri();
                 assert uri.getPath() != null;
                 switch (uri.getPath()) {
-
                     case BuildConfig.W_motion_path:
                         float[] motion = dataMapItem.getDataMap().getFloatArray(BuildConfig.W_motion_key);
-//                        hrTxt.setText(Float.toString(motion[0]));
+                        int hr = dataMapItem.getDataMap().getInt(BuildConfig.W_heart_rate_key);
+                        hrTxt.setText(Integer.toString(hr));
                         String accString = motion[0] + "\n" + motion[1] + "\n" + motion[2];
                         String gyroString = motion[3] + "\n" + motion[4] + "\n" + motion[5];
                         accTxt.setText(accString);
                         gyroTxt.setText(gyroString);
-
+                        break;
                 }
             }
 
