@@ -6,7 +6,12 @@
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
 
     <!-- Required only if your app isn't using the Device Companion Manager. -->
+
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
     <uses-feature android:name="android.hardware.bluetooth_le" android:required="true"/>
 
     <application
@@ -17,6 +22,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".BrainActivity"/>
+        <activity android:name=".DeviceScanActivity"/>
+        <service android:name=".BluetoothLeService" android:enabled="true"/>
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

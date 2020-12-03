@@ -100,8 +100,8 @@
         android:text="@string/record"
         android:gravity="center"
         android:textColor="@color/white"
-        android:textSize="32sp"
-        android:padding="32dp"
+        android:textSize="18sp"
+        android:padding="18dp"
         />
     
     <TextView
@@ -114,8 +114,22 @@
         android:text="@string/stop"
         android:gravity="center"
         android:textColor="@color/white"
-        android:textSize="32sp"
-        android:padding="32dp"
+        android:textSize="18sp"
+        android:padding="18dp"
+        />
+
+    <TextView
+        android:id="@+id/eeg_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="32dp"
+        android:layout_gravity="center"
+        android:background="@drawable/stop_button"
+        android:text="@string/eeg"
+        android:gravity="center"
+        android:textColor="@color/white"
+        android:textSize="18sp"
+        android:padding="18dp"
         />
 
 </LinearLayout>

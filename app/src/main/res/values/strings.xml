@@ -3,7 +3,7 @@
     <string name="heart_rate">HR : </string>
     <string name="accelerometer">Acc : </string>
     <string name="gyroscope">Gyro: </string>
-    <string name="eeg">EEG: </string>
+    <string name="eeg">EEG</string>
     <string name="record">Rec</string>
     <string name="stop">Stop</string>
 

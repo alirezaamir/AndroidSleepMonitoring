@@ -74,7 +74,7 @@ public class BrainActivity extends AppCompatActivity{
                 // Show all the supported services and characteristics on the user interface.
                 registerHeartRateService(mBluetoothLeService.getSupportedGattServices());
             } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
-                bleTxt.setText(intent.getIntExtra(BluetoothLeService.EXTRA_DATA, 0));
+                bleTxt.setText(" " + intent.getIntExtra(BluetoothLeService.EXTRA_DATA, 0));
             }
         }
     };
@@ -87,7 +87,7 @@ public class BrainActivity extends AppCompatActivity{
             mDeviceAddress = data.getStringExtra(EXTRAS_DEVICE_ADDRESS);
             Log.v(TAG, "Device Address: "+ mDeviceAddress);
 
-            Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
+            Intent gattServiceIntent = new Intent(BrainActivity.this, BluetoothLeService.class);
             bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
         }
     }
@@ -96,6 +96,10 @@ public class BrainActivity extends AppCompatActivity{
     protected void onResume() {
         super.onResume();
         registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
+        if (mBluetoothLeService != null) {
+            final boolean result = mBluetoothLeService.connect(mDeviceAddress);
+            Log.d(TAG, "Connect request result=" + result);
+        }
     }
 
     @Override

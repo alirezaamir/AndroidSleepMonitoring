@@ -15,6 +15,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -44,7 +45,8 @@ public class MainActivity extends AppCompatActivity implements DataClient.OnData
     public static final String ACCEL = "ACCEL";
     public static final String GYRO = "GYRO";
 
-    TextView recBtn, stopBtn, hrTxt, accTxt, gyroTxt;
+    TextView recBtn, stopBtn, eegBtn;
+    TextView hrTxt, accTxt, gyroTxt;
     private HeartRateBroadcastReceiver heartRateBroadcastReceiver;
 
     @Override
@@ -54,15 +56,19 @@ public class MainActivity extends AppCompatActivity implements DataClient.OnData
 
         recBtn = (TextView) findViewById(R.id.rec_btn);
         stopBtn = (TextView) findViewById(R.id.stop_btn);
+        eegBtn = (TextView) findViewById(R.id.eeg_btn);
         hrTxt = findViewById(R.id.hr_value);
         accTxt = findViewById(R.id.acc_value);
         gyroTxt = findViewById(R.id.gyro_value);
 
+        eegBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, BrainActivity.class);
+                startActivity(intent);
+            }
+        });
 
-        // Intent to the Brainactivity
-        // Comment these lines to stay in this activity
-//        Intent intent = new Intent(this, BrainActivity.class);
-//        startActivity(intent);
     }
 
 
@@ -85,7 +91,7 @@ public class MainActivity extends AppCompatActivity implements DataClient.OnData
     @Override
     public void onDataChanged(DataEventBuffer dataEventBuffer) {
         Log.v("MainActivity", "data received: ");
-        for (DataEvent event : dataEventBuffer){
+        for (DataEvent event : dataEventBuffer) {
             if (event.getType() == DataEvent.TYPE_CHANGED) {
                 DataMapItem dataMapItem = DataMapItem.fromDataItem(event.getDataItem());
                 Uri uri = event.getDataItem().getUri();
@@ -119,5 +125,4 @@ public class MainActivity extends AppCompatActivity implements DataClient.OnData
     }
 
 
-
-    }
+}
