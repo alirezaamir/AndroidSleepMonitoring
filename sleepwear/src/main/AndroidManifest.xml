@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="epfl.esl.sleepwear">
+    package="epfl.esl.sleep">
 
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.BODY_SENSORS"/>
@@ -28,7 +28,7 @@
             android:value="true" />
 
         <activity
-            android:name=".MainActivity"
+            android:name="epfl.esl.sleep.MainActivity"
             android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -37,7 +37,7 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".WearService">
+        <service android:name="epfl.esl.sleep.WearService">
             <intent-filter>
                 <action android:name="com.google.android.gms.wearable.DATA_CHANGED" />
 

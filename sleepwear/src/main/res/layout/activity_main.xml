@@ -19,7 +19,7 @@
         <LinearLayout
             android:id="@+id/acc_linear"
             android:layout_width="match_parent"
-            android:layout_height="127dp"
+            android:layout_height="177dp"
             android:layout_margin="8dp"
             android:gravity="start"
             android:orientation="horizontal">

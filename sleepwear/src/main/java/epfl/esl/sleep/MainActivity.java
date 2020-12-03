@@ -1,4 +1,4 @@
-package epfl.esl.sleepwear;
+package epfl.esl.sleep;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -89,15 +89,52 @@ public class MainActivity extends WearableActivity implements SensorEventListene
         if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
             float acc0 = (float) event.values[0];
             float acc1 = (float) event.values[1];
-            float acc2 = (float) event.values[2];
+            float acc2 = (float) -event.values[2]; // z axis upward
 
             double normAcc = Math.sqrt(Math.pow(acc0, 2) + Math.pow(acc1, 2) + Math.pow(acc2, 2));
             float ang0 = (float) Math.toDegrees(Math.acos(acc0/normAcc));
             float ang1 = (float) Math.toDegrees(Math.acos(acc1/normAcc));
             float ang2 = (float) Math.toDegrees(Math.acos(acc2/normAcc));
 
-            accText.setText(acc0 + "\n" + acc1 + "\n" + acc2 + "\n" +
-                            ang0 + "\n" + ang1 + "\n" + ang2);
+            // positions ref angles 12x3
+            int npos = 12;
+            float mn_sq_err = 0;
+            float[][] pos = {{90, 90, 180},  // sit
+                             {180, 90, 90},  // back
+                             {110, 20, 90},  // back
+                             {110, 160, 90}, // back
+                             {110, 30, 110}, // left
+                             {90, 30, 120},  // left
+                             {110, 150, 110},// right
+                             {90, 150, 120}, // right
+                             {90, 140, 125}, // front
+                             {90, 40, 125},  // front
+                             {90, 160, 110}, // front
+                             {90, 20, 110}}; // front
+
+            int pos_idx = 0;
+            float min_err = ((float) (Math.pow(pos[0][0]-ang0, 2) + Math.pow(pos[0][1]-ang1, 2) + Math.pow(pos[0][2]-ang2, 2))) / 3;
+            for (int i=1; i<npos; i++)
+            {
+                mn_sq_err = ((float) (Math.pow(pos[i][0]-ang0, 2) + Math.pow(pos[i][1]-ang1, 2) + Math.pow(pos[i][2]-ang2, 2))) / 3;
+                if (mn_sq_err < min_err)
+                    pos_idx = i;
+            }
+            String[][] positions = {{"sit"}, {"back"}, {"left"}, {"right"}, {"front"}};
+            String pos_est = "sit";
+
+            if (pos_idx==1 || pos_idx==2)
+                pos_est = "back";
+            else if (pos_idx==3 || pos_idx==4)
+                pos_est = "left";
+            else if (pos_idx==6 || pos_idx==7)
+                pos_est = "right";
+            else if (pos_idx==8 || pos_idx==9 || pos_idx==10 || pos_idx==11)
+                pos_est = "front";
+
+
+                    accText.setText(acc0 + "\n" + acc1 + "\n" + acc2 + "\n" +
+                            ang0 + "\n" + ang1 + "\n" + ang2 + "\n" + pos_est);
             if (recording) {
                 accArray.add(acc0);
                 accArray.add(acc1);
@@ -182,10 +219,10 @@ public class MainActivity extends WearableActivity implements SensorEventListene
                 }
             }
             fos_acc.write("\n".getBytes());
-            fos_acc.flush();
+//            fos_acc.flush();
             fos_acc.close();
             fos_gyro.write("\n".getBytes());
-            fos_gyro.flush();
+//            fos_gyro.flush();
             fos_gyro.close();
         } catch (IOException e) {
             e.printStackTrace();
