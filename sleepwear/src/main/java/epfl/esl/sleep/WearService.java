@@ -37,6 +37,7 @@ public class WearService extends WearableListenerService {
     public static final String HEART_RATE = "HEART_RATE";
     public static final String LONGITUDE = "LONGITUDE";
     public static final String LATITUDE = "LATITUDE";
+    public static final String MOTION = "MOTION";
     public static final String HEART_RATE_AND_LOCATION = "HEART_RATE_AND_LOCATION";
 
     // Tag for Logcat
@@ -90,17 +91,15 @@ public class WearService extends WearableListenerService {
                 putDataMapRequest.getDataMap().putInt(BuildConfig.W_heart_rate_key, intent.getIntExtra(HEART_RATE, -1));
                 sendPutDataMapRequest(putDataMapRequest);
                 break;
-            case LOCATION:
-                putDataMapRequest = PutDataMapRequest.create(BuildConfig.W_location_path);
-                putDataMapRequest.getDataMap().putDouble(BuildConfig.W_latitude_key, intent.getDoubleExtra(LATITUDE, -1));
-                putDataMapRequest.getDataMap().putDouble(BuildConfig.W_longitude_key, intent.getDoubleExtra(LONGITUDE, -1));
+            case MOTION:
+                putDataMapRequest = PutDataMapRequest.create(BuildConfig.W_motion_path);
+                putDataMapRequest.getDataMap().putFloatArray(BuildConfig.W_motion_key, intent.getFloatArrayExtra(MOTION));
                 sendPutDataMapRequest(putDataMapRequest);
                 break;
             case HEART_RATE_AND_LOCATION:
                 putDataMapRequest = PutDataMapRequest.create(BuildConfig.W_path_hr_motion);
                 putDataMapRequest.getDataMap().putIntegerArrayList(BuildConfig.W_heart_rate_key, intent.getIntegerArrayListExtra(HEART_RATE));
-                putDataMapRequest.getDataMap().putFloatArray(BuildConfig.W_latitude_key, intent.getFloatArrayExtra(LATITUDE));
-                putDataMapRequest.getDataMap().putFloatArray(BuildConfig.W_longitude_key, intent.getFloatArrayExtra(LONGITUDE));
+                putDataMapRequest.getDataMap().putFloatArray(BuildConfig.W_motion_key, intent.getFloatArrayExtra(LATITUDE));
                 sendPutDataMapRequest(putDataMapRequest);
                 break;
             default:
@@ -299,6 +298,6 @@ public class WearService extends WearableListenerService {
 
     // Constants
     public enum ACTION_SEND {
-        STARTACTIVITY, MESSAGE, EXAMPLE_DATAMAP, EXAMPLE_ASSET, HEART_RATE, LOCATION, HEART_RATE_AND_LOCATION;
+        STARTACTIVITY, MESSAGE, EXAMPLE_DATAMAP, EXAMPLE_ASSET, HEART_RATE, MOTION, HEART_RATE_AND_LOCATION;
     }
 }

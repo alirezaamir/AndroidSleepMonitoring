@@ -42,9 +42,8 @@ allprojects {
                 heart_rate_path     : "/HEART_RATE",
                 heart_rate_key      : "heart_rate",
 
-                location_path       : "/LOCATION",
-                longitude_key       : "longitude",
-                latitude_key        : "latitude",
+                motion_path         : "/MOTION",
+                motion_key          : "motion",
         ]
     }
 }

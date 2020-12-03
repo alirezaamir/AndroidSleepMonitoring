@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".BrainActivity"
+    android:orientation="vertical"
+    android:padding="32dp">
+
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:padding="16dp">
+
+        <TextView
+            android:id="@+id/ble_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/eeg"
+            android:textSize="32sp"
+            android:textColor="@color/colorPrimaryDark"/>
+
+        <Space
+            android:layout_width="8dp"
+            android:layout_height="wrap_content"/>
+
+        <TextView
+            android:id="@+id/ble_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="32sp"
+            android:textColor="@color/colorPrimaryDark"/>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/rec_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="32dp"
+        android:layout_gravity="center"
+        android:background="@drawable/rec_button"
+        android:text="@string/record"
+        android:gravity="center"
+        android:textColor="@color/white"
+        android:textSize="32sp"
+        android:padding="32dp"
+        />
+
+    <TextView
+        android:id="@+id/stop_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="32dp"
+        android:layout_gravity="center"
+        android:background="@drawable/stop_button"
+        android:text="@string/stop"
+        android:gravity="center"
+        android:textColor="@color/white"
+        android:textSize="32sp"
+        android:padding="32dp"
+        />
+
+
+</LinearLayout>
