@@ -105,24 +105,39 @@ public class MainActivity extends AppCompatActivity implements DataClient.OnData
                 switch (uri.getPath()) {
                     case BuildConfig.W_motion_path:
                         float[] motion = dataMapItem.getDataMap().getFloatArray(BuildConfig.W_motion_key);
-                        int posEst = getPositionEstimation(motion);
+                        int posEst = (int) motion[3]; //getPositionEstimation(motion);
                         int hr = dataMapItem.getDataMap().getInt(BuildConfig.W_heart_rate_key);
                         hrTxt.setText(Integer.toString(hr));
                         String accString = String.format("%.2f\n%.2f\n%.2f\n",motion[0], motion[1], motion[2]);
-                        String posString;
-                        if (posEst == 1)
-                            posString = "back";
-                        else if (posEst == 2)
-                            posString = "left";
-                        else if (posEst == 3)
-                            posString = "right";
-                        else if (posEst == 4)
-                            posString = "front";
-                        else //if (posEst == 0)
-                            posString = "Sit";
+
+//                        float acc0 = motion[0];
+//                        float acc1 = motion[1];
+//                        float acc2 = motion[2];
+//
+//                        double normAcc = Math.sqrt(Math.pow(acc0, 2) + Math.pow(acc1, 2) + Math.pow(acc2, 2));
+//                        float ang0 = (float) Math.toDegrees(Math.acos(acc0 / normAcc));
+//                        float ang1 = (float) Math.toDegrees(Math.acos(acc1 / normAcc));
+//                        float ang2 = (float) Math.toDegrees(Math.acos(acc2 / normAcc));
+//                        String posString = String.format("%.2f\n%.2f\n%.2f\n",ang0, ang1, ang2);
+                        String pos_est;// = String.format("%d", posEst);
+                        if (posEst==0) {
+                            pos_est = "moving";
+                        } else if (posEst==1) {
+                            pos_est = "sit";
+                        } else if (posEst==2) {
+                            pos_est = "back";
+                        } else if (posEst==3) {
+                            pos_est = "left";
+                        } else if (posEst==4) {
+                            pos_est = "right";
+                        } else if (posEst==5) {
+                            pos_est = "front";
+                        } else {
+                            pos_est = "unknown";
+                        }
 //                        String gyroString = motion[3] + "\n" + motion[4] + "\n" + motion[5];
                         accTxt.setText(accString);
-                        posTxt.setText(posString);
+                        posTxt.setText(pos_est);
 //                      gyroTxt.setText(gyroString);
                         break;
                 }
@@ -137,7 +152,7 @@ public class MainActivity extends AppCompatActivity implements DataClient.OnData
 
         float acc0 = motionData[0];
         float acc1 = motionData[1];
-        float acc2 = -motionData[2];
+        float acc2 = motionData[2];
 
         double normAcc = Math.sqrt(Math.pow(acc0, 2) + Math.pow(acc1, 2) + Math.pow(acc2, 2));
         float ang0 = (float) Math.toDegrees(Math.acos(acc0 / normAcc));
@@ -180,7 +195,7 @@ public class MainActivity extends AppCompatActivity implements DataClient.OnData
         else if (pos_idx==8 || pos_idx==9 || pos_idx==10 || pos_idx==11)
             posEst = 4;
 
-        return posEst;
+        return pos_idx;
     }
 
 

@@ -38,6 +38,9 @@ public class MainActivity extends WearableActivity implements SensorEventListene
     final private String TAG = MainActivity.class.getSimpleName();
     ArrayList<Float> accArray = new ArrayList<>();
     ArrayList<Float> gyroArray = new ArrayList<>();
+    private int acc_buff_idx = 0;
+    private int acc_buff_size = 128;
+    private float[][] acc_buff = new float[3][acc_buff_size];
     private boolean recording = false;
     private static final int SENDING_PERIOD= 2000;
     private float[] accGyrValues = {0, 0, 0, 0, 0, 0};
@@ -111,42 +114,134 @@ public class MainActivity extends WearableActivity implements SensorEventListene
             float ang1 = (float) Math.toDegrees(Math.acos(acc1 / normAcc));
             float ang2 = (float) Math.toDegrees(Math.acos(acc2 / normAcc));
 
-            // positions ref angles 12x3
-            int npos = 12;
-            float mn_sq_err = 0;
-            float[][] pos = {{90, 90, 180},  // sit
-                             {180, 90, 90},  // back
-                             {110, 20, 90},  // back
-                             {110, 160, 90}, // back
-                             {110, 30, 110}, // left
-                             {90, 30, 120},  // left
-                             {110, 150, 110},// right
-                             {90, 150, 120}, // right
-                             {90, 140, 125}, // front
-                             {90, 40, 125},  // front
-                             {90, 160, 110}, // front
-                             {90, 20, 110}}; // front
+            // Method 1
+//            // positions ref angles 12x3
+//            int npos = 12;
+//            float mn_sq_err = 0;
+//            float[][] pos = {{90, 90, 180},  // sit
+//                             {180, 90, 90},  // back
+//                             {110, 20, 90},  // back
+//                             {110, 160, 90}, // back
+//                             {110, 30, 110}, // left
+//                             {90, 30, 120},  // left
+//                             {110, 150, 110},// right
+//                             {90, 150, 120}, // right
+//                             {90, 140, 125}, // front
+//                             {90, 40, 125},  // front
+//                             {90, 160, 110}, // front
+//                             {90, 20, 110}}; // front
+//
+//            int pos_idx = 0;
+//            float min_err = ((float) (Math.pow(pos[0][0]-ang0, 2) + Math.pow(pos[0][1]-ang1, 2) + Math.pow(pos[0][2]-ang2, 2))) / 3;
+//            for (int i=1; i<npos; i++)
+//            {
+//                mn_sq_err = ((float) (Math.pow(pos[i][0]-ang0, 2) + Math.pow(pos[i][1]-ang1, 2) + Math.pow(pos[i][2]-ang2, 2))) / 3;
+//                if (mn_sq_err < min_err)
+//                    pos_idx = i;
+//            }
+//            String[][] positions = {{"moving"}, {"sit"}, {"back"}, {"left"}, {"right"}, {"front"}};
+//            String pos_est = "sit";
+//            int posEst_int = 0;
+//
+//            if (pos_idx==1 || pos_idx==2) {
+//                pos_est = "back";
+//                posEst_int = 1;
+//            } else if (pos_idx==3 || pos_idx==4) {
+//                pos_est = "left";
+//                posEst_int = 2;
+//            } else if (pos_idx==6 || pos_idx==7) {
+//                pos_est = "right";
+//                posEst_int = 3;
+//            } else if (pos_idx==8 || pos_idx==9 || pos_idx==10 || pos_idx==11) {
+//                pos_est = "front";
+//                posEst_int = 4;
+//            }
 
-            int pos_idx = 0;
-            float min_err = ((float) (Math.pow(pos[0][0]-ang0, 2) + Math.pow(pos[0][1]-ang1, 2) + Math.pow(pos[0][2]-ang2, 2))) / 3;
-            for (int i=1; i<npos; i++)
+            // Method 2
+            String pos_est;
+            int posEst_int = 0;
+            int moving_f = 0;
+            float[] sum = {0, 0, 0};
+            float[] mean = {0, 0, 0};
+
+            acc_buff[0][acc_buff_idx] = acc0;
+            acc_buff[1][acc_buff_idx] = acc1;
+            acc_buff[2][acc_buff_idx] = acc2;
+            acc_buff_idx++;
+            acc_buff_idx = acc_buff_idx%acc_buff_size;
+
+            for(int i=0;i<acc_buff_size;i++)
+	        {
+		        sum[0]=sum[0]+acc_buff[0][i];
+                sum[1]=sum[1]+acc_buff[1][i];
+                sum[2]=sum[2]+acc_buff[2][i];
+	        }
+	        mean[0]=sum[0]/acc_buff_size;
+            mean[1]=sum[1]/acc_buff_size;
+            mean[2]=sum[2]/acc_buff_size;
+
+            sum[0] = 0;
+            sum[1] = 0;
+            sum[2] = 0;
+
+            for(int i=0;i<acc_buff_size;i++)
             {
-                mn_sq_err = ((float) (Math.pow(pos[i][0]-ang0, 2) + Math.pow(pos[i][1]-ang1, 2) + Math.pow(pos[i][2]-ang2, 2))) / 3;
-                if (mn_sq_err < min_err)
-                    pos_idx = i;
+                sum[1]+=Math.pow((acc_buff[1][i]-mean[1]),2);
             }
-            String[][] positions = {{"sit"}, {"back"}, {"left"}, {"right"}, {"front"}};
-            String pos_est = "sit";
+            mean[1]=sum[1]/(acc_buff_size-1);
+            double deviation = Math.sqrt(mean[1]);
 
-            if (pos_idx==1 || pos_idx==2)
+            if (deviation > 0.8) {
+                moving_f = 1;
+            }
+
+            if (moving_f == 0)
+            {
+                double normAcc2 = Math.sqrt(Math.pow(acc0, 2) + Math.pow(acc1, 2) + Math.pow(acc2, 2));
+                float angX = (float) Math.toDegrees(Math.acos(acc0 / normAcc2));
+                float angY = (float) Math.toDegrees(Math.acos(acc1 / normAcc2));
+                float angZ = (float) Math.toDegrees(Math.acos(acc2 / normAcc2));
+
+                if (angZ > 150) {
+                    posEst_int = 1; // sit
+                } else if (angX > 140) {
+                    posEst_int = 2; // back
+                } else if (angY < 50 || angY > 120) {
+                    if (angZ < 105) {
+                        posEst_int = 2; // back
+                    } else if (angX > 100 || (angZ-angX) < 20) {
+                        if (angY < 90) {
+                            posEst_int = 3; // left
+                        } else {
+                            posEst_int = 4; // right
+                        }
+                    } else if (angX < 100 && angZ > 100) {
+                        posEst_int = 5; // front
+                    } else {
+                        posEst_int = 6; // unknown
+                    }
+                } else {
+                    posEst_int = 6; // unknown
+                }
+            } else {
+                posEst_int = 0; // moving
+            }
+
+            if (posEst_int==0) {
+                pos_est = "moving";
+            } else if (posEst_int==1) {
+                pos_est = "sit";
+            } else if (posEst_int==2) {
                 pos_est = "back";
-            else if (pos_idx==3 || pos_idx==4)
+            } else if (posEst_int==3) {
                 pos_est = "left";
-            else if (pos_idx==6 || pos_idx==7)
+            } else if (posEst_int==4) {
                 pos_est = "right";
-            else if (pos_idx==8 || pos_idx==9 || pos_idx==10 || pos_idx==11)
+            } else if (posEst_int==5) {
                 pos_est = "front";
-
+            } else {
+                pos_est = "unknown";
+            }
 
                     accText.setText(acc0 + "\n" + acc1 + "\n" + acc2 + "\n" +
                             ang0 + "\n" + ang1 + "\n" + ang2 + "\n" + pos_est);
@@ -160,6 +255,9 @@ public class MainActivity extends WearableActivity implements SensorEventListene
             accGyrValues[0] = acc0;
             accGyrValues[1] = acc1;
             accGyrValues[2] = acc2;
+            accGyrValues[3] = (float) posEst_int;
+            accGyrValues[4] = 0;
+            accGyrValues[5] = 0;
 
         } else if (event.sensor.getType() == Sensor.TYPE_GYROSCOPE) {
             float gyro0 = (float) event.values[0];
@@ -174,9 +272,9 @@ public class MainActivity extends WearableActivity implements SensorEventListene
                 gyroArray.add(gyro2);
             }
 
-            accGyrValues[3] = gyro0;
-            accGyrValues[4] = gyro1;
-            accGyrValues[5] = gyro2;
+//            accGyrValues[3] = gyro0;
+//            accGyrValues[4] = gyro1;
+//            accGyrValues[5] = gyro2;
         } else if(event.sensor.getType() == Sensor.TYPE_HEART_RATE) {
             hrValues = (int) event.values[0];
 
