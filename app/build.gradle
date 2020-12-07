@@ -33,12 +33,18 @@ android {
             }
         }
     }
+    buildFeatures {
+        mlModelBinding true
+    }
 }
 
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
+    implementation 'org.tensorflow:tensorflow-lite-support:0.1.0-rc1'
+    implementation 'org.tensorflow:tensorflow-lite-metadata:0.1.0-rc1'
+    implementation 'org.tensorflow:tensorflow-lite-gpu:2.2.0'
     testImplementation 'junit:junit:4.12'
     implementation 'androidx.media:media:1.2.0'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
