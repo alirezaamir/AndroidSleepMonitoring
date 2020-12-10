@@ -71,6 +71,9 @@ public class BluetoothLeService extends Service {
     public final static UUID UUID_COMMAND =
             UUID.fromString(SampleGattAttributes.COMMAND_CHARACTERISTIC);
 
+    public final static UUID UUID_COMMAND_SERVICE =
+            UUID.fromString(SampleGattAttributes.COMMAND_SERVICE);
+
     // Implements callback methods for GATT events that the app cares about.  For example,
     // connection change and services discovered.
     private final BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
@@ -248,19 +251,19 @@ public class BluetoothLeService extends Service {
             Log.w(TAG, "Device not found.  Unable to connect.");
             return false;
         }
-//
-//        handler.postDelayed(new Runnable() {
-//            @Override
-//            public void run() {
-//                BluetoothGattCharacteristic characteristic= getSupportedGattServices().get(0)
-//                        .getCharacteristic(UUID_COMMAND);
-//                byte[] value = new byte[1];
-//                value[0] = (byte) (0xF0);
-//                characteristic.setValue(value);
-//                mBluetoothGatt.writeCharacteristic(characteristic);
-//                Log.d(TAG, "Wrote characteristic");
-//            }
-//        }, 10000);
+
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                BluetoothGattCharacteristic characteristic= mBluetoothGatt.getService(UUID_COMMAND_SERVICE)
+                        .getCharacteristic(UUID_COMMAND);
+                byte[] value = new byte[1];
+                value[0] = (byte) (0xF0);
+                characteristic.setValue(value);
+                mBluetoothGatt.writeCharacteristic(characteristic);
+                Log.d(TAG, "Wrote characteristic");
+            }
+        }, 20000);
         // We want to directly connect to the device, so we are setting the autoConnect
         // parameter to false.
         mBluetoothGatt = device.connectGatt(this, false, mGattCallback);
