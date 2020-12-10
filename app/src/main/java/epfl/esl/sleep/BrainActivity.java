@@ -33,6 +33,9 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -47,6 +50,10 @@ public class BrainActivity extends AppCompatActivity{
     private String mDeviceAddress;
     private BluetoothLeService mBluetoothLeService;
     private String TAG = BrainActivity.class.getSimpleName();
+    File path;
+    File file_eeg;
+    private byte[] eegLongArray = new byte[2000];
+    private int eegArrayPointer = 0;
 
     TextView bleTxt;
 
@@ -58,6 +65,9 @@ public class BrainActivity extends AppCompatActivity{
 
         Intent intent = new Intent(this, DeviceScanActivity.class);
         startActivityForResult(intent, BLE_CONNECTION);
+
+        path = getExternalFilesDir(null);
+        file_eeg = new File(path, "eeg_v1.txt");
     }
 
 
@@ -75,7 +85,14 @@ public class BrainActivity extends AppCompatActivity{
                 // Show all the supported services and characteristics on the user interface.
                 registerHeartRateService(mBluetoothLeService.getSupportedGattServices());
             } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
-                bleTxt.setText(Arrays.toString(intent.getByteArrayExtra(BluetoothLeService.EXTRA_DATA)));
+                final byte[] eegByteArray = intent.getByteArrayExtra(BluetoothLeService.EXTRA_DATA);
+                bleTxt.setText(Arrays.toString(eegByteArray));
+                for (int i = 0; i< 20; i++) {
+                    eegArrayPointer = (eegArrayPointer + 1) % 2000;
+                    eegLongArray[eegArrayPointer] =eegByteArray[i];
+                }
+                if(eegArrayPointer < 20)
+                    writeToFile(eegLongArray);
             }
         }
     };
@@ -158,6 +175,27 @@ public class BrainActivity extends AppCompatActivity{
                             gattCharacteristic, true);
                 }
             }
+        }
+    }
+
+
+    private void writeToFile(byte[] bytes) {
+        // Create File to save the data
+
+        try {
+            FileOutputStream fos_eeg = new FileOutputStream(file_eeg, true);
+//            for (int i = 0; i < 20; i++) {
+            fos_eeg.write(bytes);
+//                if ((i % 3) == 0) {
+//                    fos_eeg.write("\n".getBytes());
+//                } else {
+//                    fos_eeg.write(", ".getBytes());
+//                }
+//            }
+            fos_eeg.write("\n".getBytes());
+            fos_eeg.close();
+           } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }
