@@ -29,9 +29,11 @@ import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Binder;
+import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -65,6 +67,9 @@ public class BluetoothLeService extends Service {
 
     public final static UUID UUID_HEART_RATE_MEASUREMENT =
             UUID.fromString(SampleGattAttributes.HEART_RATE_MEASUREMENT);
+
+    public final static UUID UUID_COMMAND =
+            UUID.fromString(SampleGattAttributes.COMMAND_CHARACTERISTIC);
 
     // Implements callback methods for GATT events that the app cares about.  For example,
     // connection change and services discovered.
@@ -102,6 +107,7 @@ public class BluetoothLeService extends Service {
         public void onCharacteristicRead(BluetoothGatt gatt,
                                          BluetoothGattCharacteristic characteristic,
                                          int status) {
+            Log.d(TAG, "On characteristic read received");
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
             }
@@ -110,7 +116,14 @@ public class BluetoothLeService extends Service {
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt,
                                             BluetoothGattCharacteristic characteristic) {
+            Log.d(TAG, "On characteristic changed");
             broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
+        }
+
+        @Override
+        public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+            super.onCharacteristicWrite(gatt, characteristic, status);
+            Log.d(TAG, "On characteristic write"+ status);
         }
     };
 
@@ -136,9 +149,10 @@ public class BluetoothLeService extends Service {
                 format = BluetoothGattCharacteristic.FORMAT_UINT8;
                 Log.d(TAG, "Heart rate format UINT8.");
             }
-            final int heartRate = characteristic.getIntValue(format, 1);
-            Log.d(TAG, String.format("Received heart rate: %d", heartRate));
-            intent.putExtra(EXTRA_DATA, heartRate);
+//            final int heartRate = characteristic.getIntValue(format, 1);
+            final byte[] eegData = characteristic.getValue();
+            Log.d(TAG, Arrays.toString(eegData));
+            intent.putExtra(EXTRA_DATA, eegData);
         } else {
             // For all other profiles, writes the data formatted in HEX.
             final byte[] data = characteristic.getValue();
@@ -210,6 +224,8 @@ public class BluetoothLeService extends Service {
      *         callback.
      */
     public boolean connect(final String address) {
+
+        Handler handler = new Handler();
         if (mBluetoothAdapter == null || address == null) {
             Log.w(TAG, "BluetoothAdapter not initialized or unspecified address.");
             return false;
@@ -232,6 +248,19 @@ public class BluetoothLeService extends Service {
             Log.w(TAG, "Device not found.  Unable to connect.");
             return false;
         }
+//
+//        handler.postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
+//                BluetoothGattCharacteristic characteristic= getSupportedGattServices().get(0)
+//                        .getCharacteristic(UUID_COMMAND);
+//                byte[] value = new byte[1];
+//                value[0] = (byte) (0xF0);
+//                characteristic.setValue(value);
+//                mBluetoothGatt.writeCharacteristic(characteristic);
+//                Log.d(TAG, "Wrote characteristic");
+//            }
+//        }, 10000);
         // We want to directly connect to the device, so we are setting the autoConnect
         // parameter to false.
         mBluetoothGatt = device.connectGatt(this, false, mGattCallback);

@@ -34,6 +34,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class BrainActivity extends AppCompatActivity{
@@ -74,7 +75,7 @@ public class BrainActivity extends AppCompatActivity{
                 // Show all the supported services and characteristics on the user interface.
                 registerHeartRateService(mBluetoothLeService.getSupportedGattServices());
             } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
-                bleTxt.setText(" " + intent.getIntExtra(BluetoothLeService.EXTRA_DATA, 0));
+                bleTxt.setText(Arrays.toString(intent.getByteArrayExtra(BluetoothLeService.EXTRA_DATA)));
             }
         }
     };
