@@ -49,6 +49,7 @@ public class BluetoothLeService extends Service {
     private String mBluetoothDeviceAddress;
     private BluetoothGatt mBluetoothGatt;
     private int mConnectionState = STATE_DISCONNECTED;
+    private final Handler writeHandler = new Handler();
 
     private static final int STATE_DISCONNECTED = 0;
     private static final int STATE_CONNECTING = 1;
@@ -156,6 +157,8 @@ public class BluetoothLeService extends Service {
             final byte[] eegData = characteristic.getValue();
             Log.d(TAG, Arrays.toString(eegData));
             intent.putExtra(EXTRA_DATA, eegData);
+            if (eegData[0] == 0)
+                writeStartCharacteristic(0);
         } else {
             // For all other profiles, writes the data formatted in HEX.
             final byte[] data = characteristic.getValue();
@@ -227,8 +230,6 @@ public class BluetoothLeService extends Service {
      *         callback.
      */
     public boolean connect(final String address) {
-
-        Handler handler = new Handler();
         if (mBluetoothAdapter == null || address == null) {
             Log.w(TAG, "BluetoothAdapter not initialized or unspecified address.");
             return false;
@@ -252,18 +253,7 @@ public class BluetoothLeService extends Service {
             return false;
         }
 
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                BluetoothGattCharacteristic characteristic= mBluetoothGatt.getService(UUID_COMMAND_SERVICE)
-                        .getCharacteristic(UUID_COMMAND);
-                byte[] value = new byte[1];
-                value[0] = (byte) (0xF0);
-                characteristic.setValue(value);
-                mBluetoothGatt.writeCharacteristic(characteristic);
-                Log.d(TAG, "Wrote characteristic");
-            }
-        }, 20000);
+        writeStartCharacteristic(20000);
         // We want to directly connect to the device, so we are setting the autoConnect
         // parameter to false.
         mBluetoothGatt = device.connectGatt(this, false, mGattCallback);
@@ -312,6 +302,22 @@ public class BluetoothLeService extends Service {
             return;
         }
         mBluetoothGatt.readCharacteristic(characteristic);
+    }
+
+
+    public void writeStartCharacteristic(long delay){
+        writeHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                BluetoothGattCharacteristic characteristic= mBluetoothGatt.getService(UUID_COMMAND_SERVICE)
+                        .getCharacteristic(UUID_COMMAND);
+                byte[] value = new byte[1];
+                value[0] = (byte) (0x01);
+                characteristic.setValue(value);
+                mBluetoothGatt.writeCharacteristic(characteristic);
+                Log.d(TAG, "Wrote characteristic");
+            }
+        }, delay);
     }
 
     /**
