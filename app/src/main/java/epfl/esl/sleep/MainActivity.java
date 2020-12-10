@@ -32,11 +32,19 @@ import com.google.android.gms.wearable.DataMapItem;
 import com.google.android.gms.wearable.Node;
 import com.google.android.gms.wearable.Wearable;
 
+import org.tensorflow.lite.DataType;
+import org.tensorflow.lite.support.tensorbuffer.TensorBuffer;
+
+import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
+
+import epfl.esl.sleep.ml.ModelDeep;
 
 public class MainActivity extends AppCompatActivity implements DataClient.OnDataChangedListener {
 
@@ -46,6 +54,8 @@ public class MainActivity extends AppCompatActivity implements DataClient.OnData
     public static final String HEART_RATE = "HEART_RATE";
     public static final String ACCEL = "ACCEL";
     public static final String GYRO = "GYRO";
+
+    private static final String TAG = MainActivity.class.getName();
 
     TextView recBtn, stopBtn, eegBtn;
     TextView hrTxt, accTxt, posTxt;//, gyroTxt;
@@ -83,6 +93,7 @@ public class MainActivity extends AppCompatActivity implements DataClient.OnData
 //                IntentFilter(RECEIVE_MOTION));
 
         Wearable.getDataClient(this).addListener(this);
+//        int stage = get_sleep_stage(this);
     }
 
     @Override
@@ -207,6 +218,38 @@ public class MainActivity extends AppCompatActivity implements DataClient.OnData
             int heartRateWatch = intent.getIntExtra(HEART_RATE, -1);
 //            hrTxt.setText(String.valueOf(heartRateWatch));
         }
+    }
+
+    private int get_sleep_stage(Context context){
+        Random rand = new Random();
+        ByteBuffer byteBuffer = ByteBuffer.allocate(4000);
+        int[] inArray = new int[4000];
+        int predictStage = 5;
+        for(int i=0; i<4000; i++){
+            byteBuffer.put((byte) rand.nextInt());
+            inArray[i] = rand.nextInt();
+        }
+        try {
+            ModelDeep model = ModelDeep.newInstance(context);
+
+            // Creates inputs for reference.
+            TensorBuffer inputFeature0 = TensorBuffer.createFixedSize(new int[]{1, 4000, 1}, DataType.FLOAT32);
+            inputFeature0.loadArray(inArray);
+
+            // Runs model inference and gets result.
+            ModelDeep.Outputs outputs = model.process(inputFeature0);
+            TensorBuffer outputFeature0 = outputs.getOutputFeature0AsTensorBuffer();
+            ByteBuffer outBuffer = outputFeature0.getBuffer();
+            Log.d(TAG, "Out Buffer" + outBuffer);
+
+
+            // Releases model resources if no longer used.
+            model.close();
+        } catch (IOException e) {
+            // TODO Handle the exception
+        }
+
+        return predictStage;
     }
 
 
