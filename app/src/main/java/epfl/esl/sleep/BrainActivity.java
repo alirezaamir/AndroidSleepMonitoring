@@ -21,6 +21,7 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
@@ -55,6 +56,8 @@ public class BrainActivity extends AppCompatActivity{
     private byte[] eegLongArray = new byte[2000];
     private int eegArrayPointer = 0;
 
+    private PowerManager.WakeLock wl;
+
     TextView bleTxt;
 
     @Override
@@ -68,6 +71,12 @@ public class BrainActivity extends AppCompatActivity{
 
         path = getExternalFilesDir(null);
         file_eeg = new File(path, "eeg_v1.txt");
+
+        PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        wl = pm.newWakeLock(
+                PowerManager.SCREEN_DIM_WAKE_LOCK
+                        | PowerManager.ON_AFTER_RELEASE,
+                TAG);
     }
 
 
@@ -138,11 +147,13 @@ public class BrainActivity extends AppCompatActivity{
             }
             // Automatically connects to the device upon successful start-up initialization.
             mBluetoothLeService.connect(mDeviceAddress);
+            wl.acquire();
         }
 
         @Override
         public void onServiceDisconnected(ComponentName componentName) {
             mBluetoothLeService = null;
+            wl.release();
         }
     };
 
