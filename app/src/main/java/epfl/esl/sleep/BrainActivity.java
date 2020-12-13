@@ -70,7 +70,7 @@ public class BrainActivity extends AppCompatActivity{
         startActivityForResult(intent, BLE_CONNECTION);
 
         path = getExternalFilesDir(null);
-        file_eeg = new File(path, "eeg_v1.txt");
+        file_eeg = new File(path, "eeg_v2.txt");
 
         PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
         wl = pm.newWakeLock(
@@ -95,7 +95,23 @@ public class BrainActivity extends AppCompatActivity{
                 registerHeartRateService(mBluetoothLeService.getSupportedGattServices());
             } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
                 final byte[] eegByteArray = intent.getByteArrayExtra(BluetoothLeService.EXTRA_DATA);
-                bleTxt.setText(Arrays.toString(eegByteArray));
+//                bleTxt.setText(Arrays.toString(eegByteArray));
+
+                // Debug accelerometer
+                byte accMSB_X, accLSB_X, accMSB_Y, accLSB_Y, accMSB_Z, accLSB_Z;
+                float acc_X, acc_Y, acc_Z;
+                accMSB_X = eegByteArray[2];
+                accLSB_X = eegByteArray[3];
+                accMSB_Y = eegByteArray[4];
+                accLSB_Y = eegByteArray[5];
+                accMSB_Z = eegByteArray[6];
+                accLSB_Z = eegByteArray[7];
+                acc_X = (float)(accMSB_X << 8 | accLSB_X);
+                acc_Y = (float)(accMSB_Y << 8 | accLSB_Y);
+                acc_Z = (float)(accMSB_Z << 8 | accLSB_Z);
+                String bleString = String.format("%.2f\n%.2f\n%.2f\n",acc_X, acc_Y, acc_Z);
+                bleTxt.setText(bleString);
+
                 for (int i = 0; i< 20; i++) {
                     eegArrayPointer = (eegArrayPointer + 1) % 2000;
                     eegLongArray[eegArrayPointer] =eegByteArray[i];

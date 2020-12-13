@@ -44,7 +44,12 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-import epfl.esl.sleep.ml.ModelDeep;
+import java.net.Socket;
+import java.io.PrintWriter;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+
+//import epfl.esl.sleep.ml.ModelDeep;
 
 public class MainActivity extends AppCompatActivity implements DataClient.OnDataChangedListener {
 
@@ -57,9 +62,20 @@ public class MainActivity extends AppCompatActivity implements DataClient.OnData
 
     private static final String TAG = MainActivity.class.getName();
 
-    TextView recBtn, stopBtn, eegBtn;
+    TextView recBtn, stopBtn, eegBtn, tcpIpBtn;
     TextView hrTxt, accTxt, posTxt;//, gyroTxt;
     private HeartRateBroadcastReceiver heartRateBroadcastReceiver;
+
+//    // TCP/IP client
+//    private CClient mClient;
+    private int tcp_cnt = 0;
+
+    private PrintWriter output;
+    private BufferedReader input;
+
+    String SERVER_IP = "192.168.1.8";;
+    int SERVER_PORT = 5500;
+    Thread Thread1 = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,6 +84,7 @@ public class MainActivity extends AppCompatActivity implements DataClient.OnData
 
         recBtn = (TextView) findViewById(R.id.rec_btn);
         stopBtn = (TextView) findViewById(R.id.stop_btn);
+        tcpIpBtn = (TextView) findViewById(R.id.tcp_ip_btn);
         eegBtn = (TextView) findViewById(R.id.eeg_btn);
         hrTxt = findViewById(R.id.hr_value);
         accTxt = findViewById(R.id.acc_value);
@@ -82,6 +99,101 @@ public class MainActivity extends AppCompatActivity implements DataClient.OnData
             }
         });
 
+        // Method 1
+//        mClient = new CClient();
+//        Thread myThready = new Thread(mClient);
+//        myThready.start();
+//
+//        tcpIpBtn.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View arg0) {
+//                proc_Login(arg0);
+//            }
+//        });
+
+        // Method 2
+        Thread1 = new Thread(new Thread1());
+        Thread1.start();
+
+        tcpIpBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View arg0) {
+                String message = "data TCP/IP: "+ tcp_cnt;
+                new Thread(new Thread3(message)).start();
+                tcp_cnt++;
+            }
+        });
+    }
+
+//    public void proc_Login(View v)
+//    {
+//        mClient.Send("data TCP/IP: "+ tcp_cnt);
+//        tcp_cnt++;
+//    }
+
+    class Thread1 implements Runnable {
+        public void run() {
+            Socket socket;
+            try {
+                socket = new Socket(SERVER_IP, SERVER_PORT);
+                output = new PrintWriter(socket.getOutputStream());
+                input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+//                        tvMessages.setText("Connected\n");
+                        Log.v(TAG, "TCP/IP connection success");
+                    }
+                });
+                new Thread(new Thread2()).start();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    class Thread2 implements Runnable {
+        @Override
+        public void run() {
+            while (true) {
+                try {
+                    final String message = input.readLine();
+                    if (message != null) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+//                                tvMessages.append("server: " + message + "\n");
+                                Log.v(TAG, "TCP/IP server: " + message + "\n");
+                            }
+                        });
+                    } else {
+                        Thread1 = new Thread(new Thread1());
+                        Thread1.start();
+                        return;
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+    class Thread3 implements Runnable {
+        private String message;
+        Thread3(String message) {
+            this.message = message;
+        }
+        @Override
+        public void run() {
+            output.write(message);
+            output.flush();
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+//                    tvMessages.append("client: " + message + "\n");
+                    Log.v(TAG, "TCP/IP client: " + message + "\n");
+//                    etMessage.setText("");
+                }
+            });
+        }
     }
 
 
@@ -229,25 +341,25 @@ public class MainActivity extends AppCompatActivity implements DataClient.OnData
             byteBuffer.put((byte) rand.nextInt());
             inArray[i] = rand.nextInt();
         }
-        try {
-            ModelDeep model = ModelDeep.newInstance(context);
-
-            // Creates inputs for reference.
-            TensorBuffer inputFeature0 = TensorBuffer.createFixedSize(new int[]{1, 4000, 1}, DataType.FLOAT32);
-            inputFeature0.loadArray(inArray);
-
-            // Runs model inference and gets result.
-            ModelDeep.Outputs outputs = model.process(inputFeature0);
-            TensorBuffer outputFeature0 = outputs.getOutputFeature0AsTensorBuffer();
-            ByteBuffer outBuffer = outputFeature0.getBuffer();
-            Log.d(TAG, "Out Buffer" + outBuffer);
-
-
-            // Releases model resources if no longer used.
-            model.close();
-        } catch (IOException e) {
-            // TODO Handle the exception
-        }
+//        try {
+//            ModelDeep model = ModelDeep.newInstance(context);
+//
+//            // Creates inputs for reference.
+//            TensorBuffer inputFeature0 = TensorBuffer.createFixedSize(new int[]{1, 4000, 1}, DataType.FLOAT32);
+//            inputFeature0.loadArray(inArray);
+//
+//            // Runs model inference and gets result.
+//            ModelDeep.Outputs outputs = model.process(inputFeature0);
+//            TensorBuffer outputFeature0 = outputs.getOutputFeature0AsTensorBuffer();
+//            ByteBuffer outBuffer = outputFeature0.getBuffer();
+//            Log.d(TAG, "Out Buffer" + outBuffer);
+//
+//
+//            // Releases model resources if no longer used.
+//            model.close();
+//        } catch (IOException e) {
+//            // TODO Handle the exception
+//        }
 
         return predictStage;
     }

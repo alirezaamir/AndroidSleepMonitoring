@@ -11,7 +11,7 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="30dp"
         android:gravity="center"
         android:orientation="horizontal"
         android:padding="16dp">
@@ -21,24 +21,24 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/heart_rate"
-            android:textSize="32sp"
-            android:textColor="@color/colorPrimaryDark"/>
+            android:textColor="@color/colorPrimaryDark"
+            android:textSize="32sp" />
 
         <Space
             android:layout_width="8dp"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content" />
 
         <TextView
             android:id="@+id/hr_value"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="32sp"
-            android:textColor="@color/colorPrimaryDark"/>
+            android:textColor="@color/colorPrimaryDark"
+            android:textSize="32sp" />
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="25dp"
         android:gravity="center"
         android:orientation="horizontal"
         android:padding="16dp">
@@ -53,19 +53,19 @@
 
         <Space
             android:layout_width="8dp"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content" />
 
         <TextView
             android:id="@+id/acc_value"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="32sp"
-            android:textColor="@color/colorPrimaryDark"/>
+            android:textColor="@color/colorPrimaryDark"
+            android:textSize="32sp" />
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="44dp"
         android:gravity="center"
         android:orientation="horizontal"
         android:padding="16dp">
@@ -80,29 +80,34 @@
 
         <Space
             android:layout_width="8dp"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content" />
 
         <TextView
             android:id="@+id/pos_value"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="32sp"
-            android:textColor="@color/colorPrimaryDark"/>
+            android:textColor="@color/colorPrimaryDark"
+            android:textSize="32sp" />
     </LinearLayout>
+
+    <Button
+        android:id="@+id/tcp_ip_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/tcpip" />
 
     <TextView
         android:id="@+id/rec_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="32dp"
         android:layout_gravity="center"
+        android:layout_margin="32dp"
         android:background="@drawable/rec_button"
-        android:text="@string/record"
         android:gravity="center"
-        android:textColor="@color/white"
-        android:textSize="18sp"
         android:padding="18dp"
-        />
+        android:text="@string/record"
+        android:textColor="@color/white"
+        android:textSize="18sp" />
     
     <TextView
         android:id="@+id/stop_btn"
