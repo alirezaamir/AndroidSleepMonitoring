@@ -109,10 +109,10 @@ public class MainActivity extends WearableActivity implements SensorEventListene
             float acc1 = (float) event.values[1];
             float acc2 = (float) -event.values[2]; // z axis upward
 
-            double normAcc = Math.sqrt(Math.pow(acc0, 2) + Math.pow(acc1, 2) + Math.pow(acc2, 2));
-            float ang0 = (float) Math.toDegrees(Math.acos(acc0 / normAcc));
-            float ang1 = (float) Math.toDegrees(Math.acos(acc1 / normAcc));
-            float ang2 = (float) Math.toDegrees(Math.acos(acc2 / normAcc));
+//            double normAcc = Math.sqrt(Math.pow(acc0, 2) + Math.pow(acc1, 2) + Math.pow(acc2, 2));
+//            float ang0 = (float) Math.toDegrees(Math.acos(acc0 / normAcc));
+//            float ang1 = (float) Math.toDegrees(Math.acos(acc1 / normAcc));
+//            float ang2 = (float) Math.toDegrees(Math.acos(acc2 / normAcc));
 
             // Method 1
 //            // positions ref angles 12x3
@@ -195,42 +195,64 @@ public class MainActivity extends WearableActivity implements SensorEventListene
                 moving_f = 1;
             }
 
+            float angX, angY, angZ;
+            double normAcc2;
+
             if (moving_f == 0)
             {
-                double normAcc2 = Math.sqrt(Math.pow(acc0, 2) + Math.pow(acc1, 2) + Math.pow(acc2, 2));
-                float angX = (float) Math.toDegrees(Math.acos(acc0 / normAcc2));
-                float angY = (float) Math.toDegrees(Math.acos(acc1 / normAcc2));
-                float angZ = (float) Math.toDegrees(Math.acos(acc2 / normAcc2));
+                normAcc2 = Math.sqrt(Math.pow(acc0, 2) + Math.pow(acc1, 2) + Math.pow(acc2, 2));
+                angX = (float) Math.toDegrees(Math.acos(acc0 / normAcc2));
+                angY = (float) Math.toDegrees(Math.acos(acc1 / normAcc2));
+                angZ = (float) Math.toDegrees(Math.acos(acc2 / normAcc2));
 
-                if (angZ > 150) {
+//                // smartwatch on head
+//                if (angZ > 150) {
+//                    posEst_int = 1; // sit
+//                } else if (angX > 140) {
+//                    posEst_int = 2; // back
+//                } else if (angY < 50 || angY > 120) {
+//                    if (angZ < 105) {
+//                        posEst_int = 2; // back
+//                    } else if (angX > 100 || (angZ-angX) < 20) {
+//                        if (angY < 90) {
+//                            posEst_int = 3; // left
+//                        } else {
+//                            posEst_int = 4; // right
+//                        }
+//                    } else if (angX < 100 && angZ > 100) {
+//                        posEst_int = 5; // front
+//                    } else {
+//                        posEst_int = 6; // unknown
+//                    }
+//                } else {
+//                    posEst_int = 6; // unknown
+//                }
+                // smartwatch on upper arm
+                if (angX > 150) {
                     posEst_int = 1; // sit
-                } else if (angX > 140) {
+                } else if (angY > 120 && angZ > 100) {
                     posEst_int = 2; // back
-                } else if (angY < 50 || angY > 120) {
-                    if (angZ < 105) {
-                        posEst_int = 2; // back
-                    } else if (angX > 100 || (angZ-angX) < 20) {
-                        if (angY < 90) {
-                            posEst_int = 3; // left
-                        } else {
-                            posEst_int = 4; // right
-                        }
-                    } else if (angX < 100 && angZ > 100) {
-                        posEst_int = 5; // front
-                    } else {
-                        posEst_int = 6; // unknown
-                    }
+                } else if (angZ > 140 && angY < 90) {
+                    posEst_int = 4; // right
+                } else if (angY > 140 && angZ < 90) {
+                    posEst_int = 3; // left
+                } else if (angZ < 40) {
+                    posEst_int = 5; // front
                 } else {
                     posEst_int = 6; // unknown
                 }
             } else {
                 posEst_int = 0; // moving
+                angX = 0;
+                angY = 0;
+                angZ = 0;
+                normAcc2 = 0;
             }
 
             if (posEst_int==0) {
                 pos_est = "moving";
             } else if (posEst_int==1) {
-                pos_est = "sit";
+                pos_est = "sit/standing";
             } else if (posEst_int==2) {
                 pos_est = "back";
             } else if (posEst_int==3) {
@@ -243,8 +265,9 @@ public class MainActivity extends WearableActivity implements SensorEventListene
                 pos_est = "unknown";
             }
 
-                    accText.setText(acc0 + "\n" + acc1 + "\n" + acc2 + "\n" +
-                            ang0 + "\n" + ang1 + "\n" + ang2 + "\n" + pos_est);
+//                    accText.setText(acc0 + "\n" + acc1 + "\n" + acc2 + "\n" +
+//                            angX + "\n" + angY + "\n" + angZ + "\n" + pos_est);
+            accText.setText(angX + "\n" + angY + "\n" + angZ + "\n" + pos_est);
 
             if (recording) {
                 accArray.add(acc0);

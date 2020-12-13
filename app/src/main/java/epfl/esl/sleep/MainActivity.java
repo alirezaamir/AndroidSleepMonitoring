@@ -73,7 +73,7 @@ public class MainActivity extends AppCompatActivity implements DataClient.OnData
     private PrintWriter output;
     private BufferedReader input;
 
-    String SERVER_IP = "192.168.1.8";;
+    String SERVER_IP = "192.168.43.24";
     int SERVER_PORT = 5500;
     Thread Thread1 = null;
 
@@ -231,22 +231,21 @@ public class MainActivity extends AppCompatActivity implements DataClient.OnData
                         int posEst = (int) motion[3]; //getPositionEstimation(motion);
                         int hr = dataMapItem.getDataMap().getInt(BuildConfig.W_heart_rate_key);
                         hrTxt.setText(Integer.toString(hr));
-                        String accString = String.format("%.2f\n%.2f\n%.2f\n",motion[0], motion[1], motion[2]);
 
-//                        float acc0 = motion[0];
-//                        float acc1 = motion[1];
-//                        float acc2 = motion[2];
+                        float acc0 = motion[0];
+                        float acc1 = motion[1];
+                        float acc2 = motion[2];
 //
-//                        double normAcc = Math.sqrt(Math.pow(acc0, 2) + Math.pow(acc1, 2) + Math.pow(acc2, 2));
-//                        float ang0 = (float) Math.toDegrees(Math.acos(acc0 / normAcc));
-//                        float ang1 = (float) Math.toDegrees(Math.acos(acc1 / normAcc));
-//                        float ang2 = (float) Math.toDegrees(Math.acos(acc2 / normAcc));
+                        double normAcc = Math.sqrt(Math.pow(acc0, 2) + Math.pow(acc1, 2) + Math.pow(acc2, 2));
+                        float ang0 = (float) Math.toDegrees(Math.acos(acc0 / normAcc));
+                        float ang1 = (float) Math.toDegrees(Math.acos(acc1 / normAcc));
+                        float ang2 = (float) Math.toDegrees(Math.acos(acc2 / normAcc));
 //                        String posString = String.format("%.2f\n%.2f\n%.2f\n",ang0, ang1, ang2);
                         String pos_est;// = String.format("%d", posEst);
                         if (posEst==0) {
                             pos_est = "moving";
                         } else if (posEst==1) {
-                            pos_est = "sit";
+                            pos_est = "sit/standing";
                         } else if (posEst==2) {
                             pos_est = "back";
                         } else if (posEst==3) {
@@ -258,7 +257,11 @@ public class MainActivity extends AppCompatActivity implements DataClient.OnData
                         } else {
                             pos_est = "unknown";
                         }
+
+//                        String accString = String.format("%.2f\n%.2f\n%.2f\n",motion[0], motion[1], motion[2]) + pos_est;
+                        String accString = String.format("%.2f\n%.2f\n%.2f\n",ang0, ang1, ang2) + pos_est;
 //                        String gyroString = motion[3] + "\n" + motion[4] + "\n" + motion[5];
+//                        String accString = pos_est;
                         accTxt.setText(accString);
                         posTxt.setText(pos_est);
 //                      gyroTxt.setText(gyroString);
